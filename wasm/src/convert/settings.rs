@@ -1,12 +1,14 @@
-#[derive(serde::Deserialize)]
+#[derive(tsify::Tsify, serde::Deserialize)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(tag = "type")]
-pub(crate) enum Settings {
+pub enum Settings {
     #[serde(rename = "svg")]
     Svg(SvgSettings),
 }
 
-#[derive(serde::Deserialize)]
-pub(crate) struct SvgSettings {
+#[derive(tsify::Tsify, serde::Deserialize, Copy, Clone)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct SvgSettings {
     pub width: u32,
     pub height: u32,
 }

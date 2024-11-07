@@ -19,7 +19,7 @@ fn from_custom_mime_type(mime_type: &str) -> Option<SourceType> {
     match mime_type {
         // SVG
         "image/svg+xml" => Some(SourceType::Svg),
-        // Farbfeld (often application/octet-stream is not inferred by image-rs)
+        // Farbfeld (often application/octet-stream is not inferred by image-rs, see https://docs.rs/image/0.25.5/src/image/image.rs.html#166-193)
         "image/farbfeld" => Some(SourceType::Raster(ImageFormat::Farbfeld)),
         _ => None,
     }

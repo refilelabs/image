@@ -2,7 +2,7 @@ use image::ImageError;
 use resvg::usvg::Error as SvgError;
 
 #[derive(thiserror::Error, Debug)]
-pub enum ConvertError {
+pub enum WasmImageError {
     #[error("Unknown file type: {0}")]
     UnknownFileType(String),
     #[error("Image library error: {0}")]
@@ -13,4 +13,6 @@ pub enum ConvertError {
     SvgError(#[from] SvgError),
     #[error("Encoding error: {0}")]
     EncodingError(String),
+    #[error("Exif error: {0}")]
+    ExifError(#[from] exif::Error),
 }

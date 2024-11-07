@@ -2,10 +2,10 @@ use resvg::render;
 use resvg::tiny_skia::{IntSize, Pixmap};
 use resvg::usvg::{Options, Size, Transform, Tree};
 
-use crate::error::ConvertError;
-use crate::settings::SvgSettings;
+use super::settings::SvgSettings;
+use crate::error::WasmImageError;
 
-pub(crate) fn svg_to_png(svg: &[u8], svg_settings: SvgSettings) -> Result<Vec<u8>, ConvertError> {
+pub(crate) fn svg_to_png(svg: &[u8], svg_settings: SvgSettings) -> Result<Vec<u8>, WasmImageError> {
     let SvgSettings { width, height } = svg_settings;
 
     let options = Options {
@@ -33,13 +33,13 @@ pub(crate) fn svg_to_png(svg: &[u8], svg_settings: SvgSettings) -> Result<Vec<u8
     );
 
     let mut pixmap = Pixmap::new(width, height)
-        .ok_or(ConvertError::SvgError(resvg::usvg::Error::InvalidSize))?;
+        .ok_or(WasmImageError::SvgError(resvg::usvg::Error::InvalidSize))?;
 
     render(&tree, transform, &mut pixmap.as_mut());
 
     pixmap
         .encode_png()
-        .map_err(|e| ConvertError::EncodingError(e.to_string()))
+        .map_err(|e| WasmImageError::EncodingError(e.to_string()))
 }
 
 #[cfg(test)]
@@ -49,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_rasterize_svg() {
-        let svg = include_bytes!("../assets/test.svg");
+        let svg = include_bytes!("../../assets/test.svg");
 
         let result = svg_to_png(svg, SvgSettings::default()).unwrap();
 
