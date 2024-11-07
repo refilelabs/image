@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import type { SVGData } from '#image/utils/dimensions'
-import type { SvgSettings } from '#image/utils/settings'
+import type { SvgSettings } from '#image/wasm/pkg/image'
+import type { AlertProps } from '@nuxt/ui'
 import { acceptList, getEndingMimeType } from '#image/utils/file_types'
+import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'
 import ConversionWorker from '@/workers/convert.ts?worker'
 // https://github.com/eliaSchenker/nuxt-webworker/blob/main/plugins/sw.ts
-import { type WorkerMessage, WorkerMessageType, type WorkerProgress, type WorkerRequest } from '#image/workers/convert.d'
+import type { ConvertWorkerMessage, ConvertWorkerRequest } from '#image/workers/convert.d'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   initFile?: File
-}>()
+  initOutputType?: string
+  hint?: string
+}>(), {
+  hint: 'Any image file (i.e. png, jpg, jpeg, gif, webp, svg etc.)',
+})
 
 const toast = useToast()
 
@@ -19,16 +25,9 @@ const size = ref<[number, number]>()
 
 const progress = ref<WorkerProgress>()
 
-const route = useRoute()
+const outputType = ref(props.initOutputType ? getEndingMimeType(props.initOutputType) ?? 'image/jpeg' : 'image/jpeg')
 
-const targetQuery = route.query.target as string | undefined
-const outputType = ref(targetQuery ? getEndingMimeType(targetQuery) ?? 'image/jpeg' : 'image/jpeg')
-
-const warning = ref<{
-  title: string
-  icon: string
-  description: string
-}>()
+const warning = ref<AlertProps>()
 
 // display warnings depending on input/output types
 watchEffect(() => {
@@ -113,6 +112,7 @@ async function startConversion() {
             title: 'Error',
             icon: 'heroicons:exclamation-circle',
             description: 'No file selected',
+            color: 'error',
           })
 
           return
@@ -129,6 +129,7 @@ async function startConversion() {
           title: 'Success',
           icon: 'heroicons:check-circle',
           description: `Conversion completed successfully in ${(endTime - startTime).toFixed(2)}ms`,
+          color: 'success',
         })
       }
       catch (e) {
@@ -140,6 +141,7 @@ async function startConversion() {
           title: 'Error',
           icon: 'i-heroicons-exclamation-circle',
           description: error,
+          color: 'error',
           actions: [{
             leadingIcon: 'i-heroicons-arrow-path',
             label: 'Retry',
@@ -158,7 +160,7 @@ async function startConversion() {
 function convert(arr: Uint8Array, inputType: MimeTypes, outputType: keyof typeof outputFileEndings): Promise<Uint8Array> {
   // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve, reject) => {
-    const params: WorkerRequest = {
+    const params: ConvertWorkerRequest = {
       inputFile: arr,
       inputType,
       outputType,
@@ -186,11 +188,11 @@ function convert(arr: Uint8Array, inputType: MimeTypes, outputType: keyof typeof
         reject(new Error('Conversion timed out'))
       }
 
-      const res = data as Ref<WorkerMessage>
+      const res = data as Ref<ConvertWorkerMessage>
 
       switch (res.value.type) {
         case WorkerMessageType.DONE:
-          resolve(res.value.payload.data as Uint8Array)
+          resolve(res.value.payload.data)
           break
         case WorkerMessageType.ERROR:
           reject(res.value.payload.error)
@@ -215,7 +217,7 @@ watch(file, () => {
 
 <template>
   <div>
-    <InputsFile v-model="file" v-model:svg-data="svgData" :accept="acceptList" class="w-full">
+    <InputsFile v-model="file" :hint="hint" :accept="acceptList" class="w-full">
       Choose File
     </InputsFile>
 
@@ -231,8 +233,7 @@ watch(file, () => {
     </div>
 
     <LazyUAlert
-      v-if="warning" variant="soft" color="warning" :title="warning.title" :icon="warning.icon"
-      :description="warning.description"
+      v-if="warning" variant="soft" color="warning" v-bind="warning"
       :close-button="{ icon: 'i-heroicons-x-mark-20-solid', color: 'gray', variant: 'link', padded: false }"
       class="mt-6" @close="warning = undefined"
     />
@@ -245,7 +246,7 @@ watch(file, () => {
     </UCard>
 
     <aside v-if="progress !== undefined" class="pt-6 w-full text-center">
-      <LazyUProgress v-model="progress.progress" />
+      <UProgress v-model="progress.progress" />
       {{ progress.message }}
     </aside>
   </div>

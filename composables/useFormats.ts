@@ -9,7 +9,9 @@ export const useImageFormats = () => {
   return {
     image: {
       source: imageSourceFormats,
+      sourceExtensions: imageSourceFormats.map(format => formatEndingMapping[format]),
       target: imageTargetFormats,
+      targetExtensions: imageTargetFormats.map(format => formatEndingMapping[format]),
       all: allFormats,
       conversions: possibleImageConversions,
     },

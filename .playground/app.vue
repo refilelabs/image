@@ -16,12 +16,11 @@ const options = [{
 //  icon: 'heroicons:arrows-pointing-in',
 //  to: '/compress'
 // },
-// {
-//  label: 'Metadata',
-//  icon: 'heroicons:document-text',
-//  to: '/metadata'
-// }
-] as NavigationMenuItem[]
+{
+  label: 'Metadata',
+  icon: 'heroicons:document-text',
+  to: '/metadata',
+}] as NavigationMenuItem[]
 </script>
 
 <template>
