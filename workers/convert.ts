@@ -1,16 +1,18 @@
-import init, { convertImage } from '#image/wasm/pkg/wasm_convert'
-import { type WorkerMessage, WorkerMessageType, type WorkerRequest, type WorkerResponse } from './convert.d'
+import type { ConvertWorkerMessage, ConvertWorkerRequest, ConvertWorkerResponse } from './convert.d'
+import init, { convertImage } from '#image/wasm/pkg/image'
+
+import { WorkerMessageType } from './shared_types'
 
 globalThis.addEventListener(
   'message',
-  (e: MessageEvent<WorkerRequest>) => {
+  (e: MessageEvent<ConvertWorkerRequest>) => {
     init().then(() => {
       // eslint-disable-next-line ts/no-unsafe-assignment
       const { inputFile, inputType, outputType, settings } = e.data
 
       const res = convertImage(inputFile, inputType, outputType, callback, settings)
 
-      const response: WorkerResponse = {
+      const response: ConvertWorkerResponse = {
         success: true,
         data: res,
       }
@@ -18,9 +20,9 @@ globalThis.addEventListener(
       globalThis.postMessage({
         type: WorkerMessageType.DONE,
         payload: response,
-      } as WorkerMessage)
+      } as ConvertWorkerMessage)
     }).catch((e) => {
-      const response: WorkerResponse = {
+      const response: ConvertWorkerResponse = {
         success: false,
         error: String(e),
       }
@@ -41,5 +43,5 @@ function callback(progress: number, message: string) {
       progress,
       message,
     },
-  } as WorkerMessage)
+  } as ConvertWorkerMessage)
 }
