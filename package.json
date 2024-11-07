@@ -9,6 +9,8 @@
     "build": "nuxt build .playground",
     "generate": "nuxt generate .playground",
     "preview": "nuxt preview .playground",
+    "postinstall": "nuxt prepare .playground && bun run wasm:bundle",
+    "wasm:bundle": "cd wasm && wasm-pack build --target web --release",
     "lint": "eslint ."
   },
   "devDependencies": {
