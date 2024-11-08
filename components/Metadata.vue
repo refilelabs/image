@@ -167,19 +167,22 @@ function extractMetadata(arr: Uint8Array, inputType: MimeTypes): Promise<Metadat
   })
 }
 
-watch(file, () => {
-  if (file.value) {
+watch(file, (newFile, oldFile) => {
+  progress.value = undefined
+  search.value = ''
+
+  if (newFile) {
     startExtraction()
+  }
+
+  if (!newFile && oldFile) {
+    metadata.value = undefined
   }
 })
 
-watch(file, () => {
-  progress.value = undefined
-  search.value = ''
-})
-
-onMounted(() => {
+onMounted(async () => {
   if (file.value) {
+    await nextTick()
     startExtraction()
   }
 })
