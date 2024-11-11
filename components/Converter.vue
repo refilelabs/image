@@ -97,63 +97,57 @@ watchEffect(() => {
 
 async function startConversion() {
   if (file.value) {
-    const reader = new FileReader()
+    const arraybuffer = await file.value.arrayBuffer()
 
-    reader.onloadend = async (e) => {
-      const res = e.target?.result as ArrayBuffer
+    const arr = new Uint8Array(arraybuffer)
 
-      const arr = new Uint8Array(res)
+    try {
+      const startTime = performance.now()
 
-      try {
-        const startTime = performance.now()
-
-        if (!file.value) {
-          toast.add({
-            title: 'Error',
-            icon: 'heroicons:exclamation-circle',
-            description: 'No file selected',
-            color: 'error',
-          })
-
-          return
-        }
-
-        const result = await convert(arr, getFileMimeType(file.value), outputType.value as keyof typeof outputFileEndings)
-
-        if (result && result.length)
-          startDownload(result, `converted.${inputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
-
-        const endTime = performance.now()
-
-        toast.add({
-          title: 'Success',
-          icon: 'heroicons:check-circle',
-          description: `Conversion completed successfully in ${(endTime - startTime).toFixed(2)}ms`,
-          color: 'success',
-        })
-      }
-      catch (e) {
-        let error = (e as any).message || (e as any).toString()
-
-        error = error.replace(/^Error: /, '')
-
+      if (!file.value) {
         toast.add({
           title: 'Error',
-          icon: 'i-heroicons-exclamation-circle',
-          description: error,
+          icon: 'heroicons:exclamation-circle',
+          description: 'No file selected',
           color: 'error',
-          actions: [{
-            leadingIcon: 'i-heroicons-arrow-path',
-            label: 'Retry',
-            onClick: () => startConversion(),
-          }],
         })
 
-        progress.value = undefined
+        return
       }
-    }
 
-    reader.readAsArrayBuffer(file.value)
+      const result = await convert(arr, getFileMimeType(file.value), outputType.value as keyof typeof outputFileEndings)
+
+      if (result && result.length)
+        startDownload(result, `converted.${inputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
+
+      const endTime = performance.now()
+
+      toast.add({
+        title: 'Success',
+        icon: 'heroicons:check-circle',
+        description: `Conversion completed successfully in ${(endTime - startTime).toFixed(2)}ms`,
+        color: 'success',
+      })
+    }
+    catch (e) {
+      let error = (e as any).message || (e as any).toString()
+
+      error = error.replace(/^Error: /, '')
+
+      toast.add({
+        title: 'Error',
+        icon: 'i-heroicons-exclamation-circle',
+        description: error,
+        color: 'error',
+        actions: [{
+          leadingIcon: 'i-heroicons-arrow-path',
+          label: 'Retry',
+          onClick: () => startConversion(),
+        }],
+      })
+
+      progress.value = undefined
+    }
   }
 }
 
@@ -217,9 +211,9 @@ watch(file, () => {
 
 <template>
   <div>
-    <InputsFile v-model="file" :hint="hint" :accept="acceptList" class="w-full">
+    <InputsImage v-model="file" :hint="hint" :accept="acceptList" class="w-full">
       Choose File
-    </InputsFile>
+    </InputsImage>
 
     <div class="flex flex-row items-end space-x-10 pt-3">
       <div class="grow">

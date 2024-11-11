@@ -66,62 +66,51 @@ const warning = ref<AlertProps | undefined>({
 
 async function startExtraction() {
   if (file.value) {
-    const reader = new FileReader()
+    const arraybuffer = await file.value.arrayBuffer()
+    const arr = new Uint8Array(arraybuffer)
 
-    reader.onloadend = async (e) => {
-      const res = e.target?.result as ArrayBuffer
+    try {
+      const startTime = performance.now()
 
-      const arr = new Uint8Array(res)
-
-      try {
-        const startTime = performance.now()
-
-        if (!file.value) {
-          toast.add({
-            title: 'Error',
-            icon: 'heroicons:exclamation-circle',
-            description: 'No file selected',
-            color: 'error',
-          })
-
-          return
-        }
-
-        const result = await extractMetadata(arr, getFileMimeType(file.value))
-
-        metadata.value = result
-
-        const endTime = performance.now()
-
-        toast.add({
-          title: 'Success',
-          icon: 'heroicons:check-circle',
-          description: `Metadata extraction completed successfully in ${(endTime - startTime).toFixed(2)}ms`,
-          color: 'success',
-        })
-      }
-      catch (e) {
-        let error = (e as any).message || (e as any).toString()
-
-        error = error.replace(/^Error: /, '')
-
+      if (!file.value) {
         toast.add({
           title: 'Error',
-          icon: 'i-heroicons-exclamation-circle',
-          description: error,
+          icon: 'heroicons:exclamation-circle',
+          description: 'No file selected',
           color: 'error',
-          actions: [{
-            leadingIcon: 'i-heroicons-arrow-path',
-            label: 'Retry',
-            onClick: () => startExtraction(),
-          }],
         })
-
-        progress.value = undefined
+        return
       }
-    }
 
-    reader.readAsArrayBuffer(file.value)
+      const result = await extractMetadata(arr, getFileMimeType(file.value))
+      metadata.value = result
+
+      const endTime = performance.now()
+
+      toast.add({
+        title: 'Success',
+        icon: 'heroicons:check-circle',
+        description: `Metadata extraction completed successfully in ${(endTime - startTime).toFixed(2)}ms`,
+        color: 'success',
+      })
+    }
+    catch (e) {
+      let error = (e as any).message || (e as any).toString()
+      error = error.replace(/^Error: /, '')
+
+      toast.add({
+        title: 'Error',
+        icon: 'i-heroicons-exclamation-circle',
+        description: error,
+        color: 'error',
+        actions: [{
+          leadingIcon: 'i-heroicons-arrow-path',
+          label: 'Retry',
+          onClick: () => startExtraction(),
+        }],
+      })
+      progress.value = undefined
+    }
   }
 }
 
@@ -190,9 +179,9 @@ onMounted(async () => {
 
 <template>
   <div class="w-full">
-    <InputsFile v-model="file" :accept="acceptList" :hint="hint" class="w-full">
+    <InputsImage v-model="file" :accept="acceptList" :hint="hint" class="w-full">
       Choose File
-    </InputsFile>
+    </InputsImage>
 
     <LazyUAlert
       v-if="warning && !metadata" variant="soft" v-bind="warning"
