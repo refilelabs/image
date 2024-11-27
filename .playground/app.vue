@@ -11,12 +11,11 @@ const options = [{
 //  icon: 'heroicons:pencil',
 //  to: '/edit',
 // },
-// {
-//  label: 'Compress',
-//  icon: 'heroicons:arrows-pointing-in',
-//  to: '/compress'
-// },
 {
+  label: 'Compress',
+  icon: 'heroicons:arrows-pointing-in',
+  to: '/compress',
+}, {
   label: 'Metadata',
   icon: 'heroicons:document-text',
   to: '/metadata',
