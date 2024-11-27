@@ -16,6 +16,10 @@ const props = withDefaults(defineProps<{
   hint: 'Any image file (i.e. png, jpg, jpeg, gif, webp, svg etc.)',
 })
 
+const emit = defineEmits<{
+  (e: 'convert', data: { inputType: string, outputType: string, duration: number }): void
+}>()
+
 const toast = useToast()
 
 const file = ref<File | undefined>(props.initFile)
@@ -121,6 +125,8 @@ async function startConversion() {
         startDownload(result, `converted.${inputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
 
       const endTime = performance.now()
+
+      emit('convert', { inputType: file.value.type, outputType: outputType.value, duration: endTime - startTime })
 
       toast.add({
         title: 'Success',
