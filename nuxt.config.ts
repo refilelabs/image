@@ -13,7 +13,7 @@ export default defineNuxtConfig({
   extends: ['../base'],
 
   components: [
-    `${currentDir}/components`,
+    { path: `${currentDir}/components`, prefix: layerName },
     // ...layerList.filter((layer) => layer !== layerName).map((layer) => ({ path: `../${layer}/components`, pathPrefix: true })),
     // getOtherLayers(layerName).map((layer) => ({ path: `../${layer}/components`, pathPrefix: true })),
   ],

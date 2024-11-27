@@ -1,3 +1,3 @@
 <template>
-  <Converter />
+  <ImageConverter />
 </template>
