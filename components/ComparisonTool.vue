@@ -47,7 +47,7 @@ onMounted(async () => {
 
 <template>
   <div ref="container" class="h-full w-full relative">
-    <div class="h-full w-full p-6">
+    <div class="h-full w-full">
       <slot />
     </div>
     <div

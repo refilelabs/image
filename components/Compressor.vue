@@ -21,6 +21,10 @@ const progress = ref<WorkerProgress>()
 
 const x = ref<number>(0)
 
+const container = ref<HTMLDivElement | null>(null)
+
+const { width: maxWidth, height: maxHeight } = useElementBounding(container)
+
 const canvas = ref<HTMLCanvasElement | null>(null)
 
 const { height, width, left, right } = useElementBounding(canvas)
@@ -33,7 +37,7 @@ const comparisonWidth = computed(() => {
     return '100%'
   }
   else {
-    return `${2 + ((x.value - left.value) / (right.value - left.value)) * 100}%`
+    return `${((x.value - left.value) / (right.value - left.value)) * 100}%`
   }
 })
 
@@ -89,34 +93,38 @@ async function drawCompressedImage(settings: CompressionSettings) {
   }
 }
 
-const { trigger } = watchTriggerable(file, async (newFile) => {
+const tryLoadImage = async (file: File) => {
+  await init()
+
+  const arraybuffer = await file.arrayBuffer()
+  const arr = new Uint8Array(arraybuffer)
+
+  const res = getPixels(arr, getFileMimeType(file))
+
+  const { width, height, pixels: rawPixels } = res
+
+  imageData.width = width
+  imageData.height = height
+  imageData.pixels = rawPixels
+
+  await nextTick()
+
+  const pixels = new Uint8ClampedArray(rawPixels)
+
+  const ctx = canvas.value?.getContext('2d')
+
+  if (ctx) {
+    const imageData = new ImageData(pixels, width, height)
+    ctx.putImageData(imageData, 0, 0)
+    toast.add({ title: 'Success', description: 'Image loaded successfully', color: 'success', icon: 'heroicons:check-circle' })
+
+    drawCompressedImage(compressionSettings)
+  }
+}
+
+watch(file, async (newFile) => {
   if (newFile) {
-    await init()
-
-    const arraybuffer = await newFile.arrayBuffer()
-    const arr = new Uint8Array(arraybuffer)
-
-    const res = getPixels(arr, getFileMimeType(newFile))
-
-    const { width, height, pixels: rawPixels } = res
-
-    imageData.width = width
-    imageData.height = height
-    imageData.pixels = rawPixels
-
-    await nextTick()
-
-    const pixels = new Uint8ClampedArray(rawPixels)
-
-    const ctx = canvas.value?.getContext('2d')
-
-    if (ctx) {
-      const imageData = new ImageData(pixels, width, height)
-      ctx.putImageData(imageData, 0, 0)
-      toast.add({ title: 'Success', description: 'Image loaded successfully', color: 'success', icon: 'heroicons:check-circle' })
-
-      drawCompressedImage(compressionSettings)
-    }
+    tryLoadImage(newFile)
   }
   else {
     imageData.width = undefined
@@ -155,7 +163,7 @@ const smallScreen = breakpoints.smallerOrEqual('sm')
 
 onMounted(() => {
   if (file.value) {
-    trigger()
+    tryLoadImage(file.value)
   }
 })
 </script>
@@ -165,10 +173,15 @@ onMounted(() => {
     <InputsMinimal v-model="file" :hint="hint" :accept="acceptList" :minimal="!!file" class="h-screen max-h-[65vh]" :disable-input="!!file">
       Choose File
       <template #file-preview>
-        <div class="w-full h-full relative">
+        <div ref="container" class="w-full h-full relative">
           <ImageComparisonTool v-model="x">
             <div class="w-full h-full notDraggable grid place-items-center">
-              <canvas v-show="file && imageData.width && imageData.height" ref="canvas" :width="imageData.width || 0" :height="imageData.height || 0" class="max-w-full max-h-full" />
+              <canvas
+                v-show="file && imageData.width && imageData.height" ref="canvas" :width="imageData.width || 0" :height="imageData.height || 0" class="max-w-full max-h-full" :style="{
+                  maxWidth: `${maxWidth}px`,
+                  maxHeight: `${maxHeight}px`,
+                }"
+              />
               <div
                 class="absolute flex flex-row justify-end" :style="{
                   width: `${width}px`,
@@ -176,15 +189,17 @@ onMounted(() => {
                 }"
               >
                 <canvas
-                  ref="compressedCanvas" :width="imageData.width || 0" :height="imageData.height || 0" :style="{
+                  ref="compressedCanvas" :width="imageData.width || 0" :height="imageData.height || 0" class="w-full h-full" :style="{
                     'clip-path': `inset(0 0 0 ${comparisonWidth})`,
+                    'max-height': `${maxHeight}px`,
+                    'max-width': `${maxWidth}px`,
                   }"
                 />
               </div>
-              <span class="absolute top-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] notDraggable">{{ file?.name }}</span>
-              <span class="absolute bottom-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] notDraggable">{{ formatBytes(file?.size || 0) }}</span>
+              <span class="absolute top-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ file?.name }}</span>
+              <span class="absolute bottom-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ formatBytes(file?.size || 0) }}</span>
               <div
-                class="absolute bottom-0 right-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] notDraggable flex flex-row items-center space-x-2"
+                class="absolute bottom-0 right-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] flex flex-row items-center space-x-2"
               >
                 <template v-if="compressedSize === undefined">
                   <UIcon name="heroicons:arrow-path" class="animate-spin" />
@@ -222,7 +237,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.notDraggable {
+.notDraggable * {
   user-drag: none;
   -webkit-user-drag: none;
   user-select: none;
