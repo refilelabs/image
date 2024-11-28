@@ -19,6 +19,10 @@ const options = [{
   label: 'Metadata',
   icon: 'heroicons:document-text',
   to: '/metadata',
+}, {
+  label: 'View',
+  icon: 'heroicons:eye',
+  to: '/view',
 }] as NavigationMenuItem[]
 </script>
 
