@@ -13,23 +13,23 @@ crate-type = ["cdylib"]
 
 [dependencies]
 gloo-utils = { version = "0.2.0", features = ["serde"] }
-image = "0.25.1"
-js-sys = "0.3.61"
+image = "0.25.5"
+js-sys = "0.3.72"
 kamadak-exif = "0.6.1"
-resvg = { version = "0.42.0", default-features = false, features = [
+resvg = { version = "0.44.0", default-features = false, features = [
   "text",
   "raster-images",
 ] }
-serde = { version = "1.0.203", features = ["serde_derive"] }
-serde_json = { version = "1.0.117", default-features = false }
+serde = { version = "1.0.215", features = ["serde_derive"] }
+serde_json = { version = "1.0.133", default-features = false }
 # serde = { version = "1.0.203", features = ["serde_derive"] }
 # serde_json = "1.0.117"
 thiserror = "1.0.61"
 tsify = "0.4.5"
-wasm-bindgen = "0.2.84"
+wasm-bindgen = "0.2.95"
 
 [dependencies.web-sys]
-version = "0.3.61"
+version = "0.3.72"
 features = ['Blob']
 
 [profile.release]

@@ -12,5 +12,8 @@ pub(crate) mod error;
 pub(crate) mod load;
 pub(crate) mod metadata;
 pub(crate) mod source_type;
+pub(crate) mod view;
 
 pub use convert::convert_image;
+pub use metadata::load_metadata;
+pub use view::get_pixels;
