@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { SVGData } from '#image/utils/dimensions'
 import type { SvgSettings } from '#image/wasm/pkg/image'
+// https://github.com/eliaSchenker/nuxt-webworker/blob/main/plugins/sw.ts
+import type { ConvertWorkerMessage, ConvertWorkerRequest } from '#image/workers/convert.d'
 import type { AlertProps } from '@nuxt/ui'
 import { acceptList, getEndingMimeType } from '#image/utils/file_types'
 import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'
 import ConversionWorker from '@/workers/convert.ts?worker'
-// https://github.com/eliaSchenker/nuxt-webworker/blob/main/plugins/sw.ts
-import type { ConvertWorkerMessage, ConvertWorkerRequest } from '#image/workers/convert.d'
 
 const props = withDefaults(defineProps<{
   initFile?: File
