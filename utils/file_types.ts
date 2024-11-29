@@ -32,6 +32,8 @@ export const acceptList = [
   '.tga',
   // PNM
   '.pnm',
+  // EXR
+  '.exr',
 ].join(',')
 
 export type MimeTypes = keyof typeof outputFileEndings | keyof typeof inputFileEndings | 'application/octet-stream'
