@@ -1,20 +1,21 @@
 [package]
 name = "image"
-version = "0.1.0"
+version = "0.2.1"
 edition = "2021"
 repository = "https://github.com/refilelabs/image"
+homepage = "https://refilelabs.com/image"
+keywords = ["image", "processing", "wasm", "web"]
 license-file = "../LICENSE"
-description = "Wasm image utilities"
+readme = "./README.md"
+description = "Wasm-based image processing library developed by re;file labs"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-gloo-utils = { version = "0.2.0", features = ["serde"] }
 image = "0.25.5"
-js-sys = "0.3.72"
+js-sys = "0.3.73"
 kamadak-exif = "0.6.1"
 resvg = { version = "0.44.0", default-features = false, features = [
   "text",
@@ -22,16 +23,14 @@ resvg = { version = "0.44.0", default-features = false, features = [
 ] }
 serde = { version = "1.0.215", features = ["serde_derive"] }
 serde_json = { version = "1.0.133", default-features = false }
-# serde = { version = "1.0.203", features = ["serde_derive"] }
-# serde_json = "1.0.117"
-thiserror = "1.0.61"
+thiserror = "2.0.3"
 tsify = "0.4.5"
-wasm-bindgen = "0.2.95"
-
-[dependencies.web-sys]
-version = "0.3.72"
-features = ['Blob']
+wasm-bindgen = "0.2.96"
+web-sys = { version = "0.3.73", features = ["Blob"] }
 
 [profile.release]
 lto = true
 opt-level = "s"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-Oz', '--enable-bulk-memory']

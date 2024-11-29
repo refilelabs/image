@@ -1,4 +1,3 @@
-#![feature(trivial_bounds)]
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::module_name_repetitions,
