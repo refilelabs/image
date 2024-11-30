@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  (e: 'convert', data: { inputType: string, outputType: string, duration: number }): void
+  convert: [opts: { inputType: string, outputType: string, duration: number }]
 }>()
 
 const toast = useToast()
