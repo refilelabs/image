@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::{load::load_image, source_type::SourceType};
 
-#[derive(tsify::Tsify, serde::Serialize, Default)]
+#[derive(tsify::Tsify, serde::Serialize, serde::Deserialize, Default)]
 #[tsify(from_wasm_abi, into_wasm_abi)]
 pub struct ImageData {
     pub width: u32,

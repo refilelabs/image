@@ -11,7 +11,7 @@ use crate::{
     source_type::SourceType,
 };
 
-#[derive(tsify::Tsify, serde::Serialize, Default)]
+#[derive(tsify::Tsify, serde::Deserialize, serde::Serialize, Default)]
 #[tsify(from_wasm_abi, into_wasm_abi)]
 pub struct Metadata {
     pub width: u32,
