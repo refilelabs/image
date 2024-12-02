@@ -8,6 +8,12 @@ import { acceptList, getEndingMimeType } from '#image/utils/file_types'
 import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'
 import ConversionWorker from '@/workers/convert.ts?worker'
 
+export interface ConversionData {
+  inputType: string
+  outputType: string
+  duration: number
+}
+
 const props = withDefaults(defineProps<{
   initFile?: File
   initOutputType?: string
@@ -17,7 +23,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  convert: [opts: { inputType: string, outputType: string, duration: number }]
+  convert: [opts: ConversionData]
 }>()
 
 const toast = useToast()

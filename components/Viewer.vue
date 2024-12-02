@@ -2,6 +2,15 @@
 import { acceptList } from '#image/utils/file_types'
 import init, { getPixels, type ImageData } from '#image/wasm/pkg/image'
 
+export interface ViewerData {
+  width: number
+  height: number
+  aspectRatio: number
+  colorDepth: number
+  inputType: string
+  duration: number
+}
+
 const props = withDefaults(defineProps<{
   initFile?: File
   initOutputType?: string
@@ -9,6 +18,10 @@ const props = withDefaults(defineProps<{
 }>(), {
   hint: 'Any image file (i.e. png, jpg, jpeg, gif, webp, svg etc.)',
 })
+
+const emit = defineEmits<{
+  view: [opts: ViewerData]
+}>()
 
 const toast = useToast()
 
@@ -29,6 +42,8 @@ const imageData = reactive<Partial<Omit<ImageData, 'pixels'>>>({
 
 const tryDrawFile = async (file: File) => {
   await init()
+
+  const start = performance.now()
 
   const arraybuffer = await file.arrayBuffer()
   const arr = new Uint8Array(arraybuffer)
@@ -52,6 +67,15 @@ const tryDrawFile = async (file: File) => {
     ctx.putImageData(imageData, 0, 0)
     toast.add({ title: 'Success', description: 'Image loaded successfully', color: 'success', icon: 'heroicons:check-circle' })
   }
+
+  emit('view', {
+    width,
+    height,
+    aspectRatio: aspect_ratio,
+    colorDepth: color_depth,
+    inputType: file.type,
+    duration: performance.now() - start,
+  })
 }
 
 watch(file, async (newFile) => {

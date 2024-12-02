@@ -5,6 +5,13 @@ import { acceptList } from '#image/utils/file_types'
 import init, { getPixels, type ImageData } from '#image/wasm/pkg/image'
 import { breakpointsTailwind } from '@vueuse/core'
 
+export interface CompressionData {
+  inputType: string
+  outputType: string
+  savings: number
+  quality: number
+}
+
 const props = withDefaults(defineProps<{
   initFile?: File
   initOutputType?: string
@@ -12,6 +19,10 @@ const props = withDefaults(defineProps<{
 }>(), {
   hint: 'Any image file (i.e. png, jpg, jpeg, gif, webp, svg etc.)',
 })
+
+const emit = defineEmits<{
+  compress: [opts: CompressionData]
+}>()
 
 const toast = useToast()
 
@@ -155,6 +166,13 @@ async function download() {
   const extension = compressionSettings.type.split('/')[1]
 
   startDownload(new Uint8Array(arrayBuffer), `${fileNameWithoutExtension}-compressed.${extension}`)
+
+  emit('compress', {
+    inputType: getFileMimeType(file.value as File),
+    outputType: compressionSettings.type,
+    savings: (1 - (compressedSize.value! / (file.value?.size || 1))) * 100,
+    quality: compressionSettings.quality,
+  })
 }
 
 const breakpoints = useBreakpoints(breakpointsTailwind)

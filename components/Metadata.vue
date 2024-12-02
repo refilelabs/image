@@ -5,12 +5,21 @@ import type { AlertProps } from '@nuxt/ui'
 import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'
 import MetadataWorker from '@/workers/metadata.ts?worker'
 
+export interface MetadataExtractData {
+  inputType: string
+  duration: number
+}
+
 const props = withDefaults(defineProps<{
   initFile?: File
   hint?: string
 }>(), {
   hint: 'Any image file (i.e. png, jpg, jpeg, gif, webp, svg etc.)',
 })
+
+const emit = defineEmits<{
+  extract: [opts: MetadataExtractData]
+}>()
 
 const toast = useToast()
 
@@ -86,6 +95,8 @@ async function startExtraction() {
       metadata.value = result
 
       const endTime = performance.now()
+
+      emit('extract', { inputType: getFileMimeType(file.value), duration: endTime - startTime })
 
       toast.add({
         title: 'Success',
