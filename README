@@ -1,0 +1,73 @@
+# refilelabs/image
+
+The `refilelabs/image` repository provides core utilities for image manipulation within the [**re;file labs**](https://refilelabs.com) platform. It offers robust, high-performance image processing features powered by WebAssembly (WASM) for secure, browser-based operations.
+
+## Features
+
+- **Image Conversion**: Convert images between various formats (e.g., JPEG, PNG, WebP).
+- **Image Resizing and Cropping**: Resize or crop images to desired dimensions.
+- **Metadata Editing**: View and edit metadata for supported image formats.
+- **WebAssembly-Powered**: All operations run securely in the browser, leveraging WASM for speed and privacy.
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js**: Ensure you have Node.js installed.
+- **Rust**: For compiling WebAssembly components.
+- **Nuxt**: Frontend framework to integrate with the broader **re;file labs** ecosystem.
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/refilelabs/image.git
+   cd image
+   ```
+
+2. Install dependencies (also builds WebAssembly modules):
+   ```bash
+   bun i
+   ```
+
+3. Start the development server:
+   ```bash
+   bun dev
+   ```
+
+## Usage
+
+### Components
+
+If you want to use the image utility components in your own project, either include this nuxt layer using the [extends feature](https://nuxt.com/docs/getting-started/layers#usage):
+```ts
+export default defineNuxtConfig({
+  extends: [
+   'github:refilelabs/image',
+  ]
+})
+```
+
+### Programmatic Usage
+
+In case you want to use the actual wasm modules in your project, you can import them directly from the [`@refilelabs/image`](https://www.npmjs.com/package/@refilelabs/image/v/next) package.
+
+## Project Structure
+
+```
+refilelabs/image
+├── .playground/         # Temporary playground for testing
+├── wasm/                # WebAssembly modules
+├── components/          # Image processing components
+├── composables/         # Shared Vue composables
+├── workers/             # Web Workers for offloading compute-intensive tasks
+└── tests/               # Unit tests
+```
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+[**re;file labs**](https://refilelabs.com) — Your secure, private file utility suite.
