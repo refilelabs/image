@@ -48,6 +48,7 @@ fn process_image(
         | ImageFormat::Tga => image::DynamicImage::ImageRgb8(img.to_rgb8()),
         ImageFormat::Ico => img.resize(256, 256, image::imageops::FilterType::Lanczos3),
         ImageFormat::OpenExr => image::DynamicImage::ImageRgba32F(img.to_rgba32f()),
+        ImageFormat::Hdr => image::DynamicImage::ImageRgb32F(img.to_rgb32f()),
         _ => img,
     };
 
