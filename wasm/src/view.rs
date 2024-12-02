@@ -27,9 +27,9 @@ pub fn get_pixels(file: &Uint8Array, src_type: &str) -> Result<ImageData, JsValu
 
     let file = file.to_vec();
 
-    let img = load_image(&file, &src_mime_type)
+    let img = load_image(&file, src_mime_type.as_ref())
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?
-        .rasterize(&None)
+        .rasterize(None)
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
     let pixels = img.to_rgba8().into_vec();

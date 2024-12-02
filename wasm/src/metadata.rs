@@ -19,7 +19,7 @@ pub struct Metadata {
     pub other: Option<HashMap<String, String>>,
 }
 
-impl<'a> TryFrom<RawSourceImage<'a>> for Metadata {
+impl TryFrom<RawSourceImage<'_>> for Metadata {
     type Error = WasmImageError;
 
     #[allow(clippy::too_many_lines)]
@@ -147,6 +147,10 @@ impl<'a> TryFrom<RawSourceImage<'a>> for Metadata {
 /// * `file` - The image file to convert.
 /// * `src_type` - The MIME type of the source image.
 /// * `cb` - A callback function to report progress.
+/// # Returns
+/// The metadata of the image.
+/// # Errors
+/// Returns an error if the metadata could not be loaded.
 pub fn load_metadata(
     file: &Uint8Array,
     src_type: &str,
@@ -170,8 +174,8 @@ pub fn load_metadata(
         &JsValue::from_str("Loading image"),
     );
 
-    let img =
-        load_raw_image(&file, &src_type).map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
+    let img = load_raw_image(&file, src_type.as_ref())
+        .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
     let _ = cb.call2(
         &this,
@@ -221,6 +225,6 @@ mod tests {
                 field_value.to_string(),
             );
         }
-        println!("{:?}", hashmap);
+        println!("{hashmap:?}");
     }
 }

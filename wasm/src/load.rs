@@ -14,10 +14,10 @@ pub(crate) enum SourceImage<'s> {
     Svg(&'s [u8]),
 }
 
-impl<'a> SourceImage<'a> {
+impl SourceImage<'_> {
     pub(crate) fn rasterize(
         &self,
-        settings: &Option<Settings>,
+        settings: Option<&Settings>,
     ) -> Result<image::DynamicImage, WasmImageError> {
         match self {
             Self::Raster(img) => Ok(img.clone()),
@@ -35,7 +35,7 @@ impl<'a> SourceImage<'a> {
 
 pub(crate) fn load_image<'a>(
     file: &'a [u8],
-    source_type: &'a Option<SourceType>,
+    source_type: Option<&'a SourceType>,
 ) -> Result<SourceImage<'a>, WasmImageError> {
     let loaded_image = match source_type {
         Some(SourceType::Raster(file_type)) => {
@@ -59,7 +59,7 @@ pub(crate) enum RawSourceImage<'s> {
 
 pub(crate) fn load_raw_image<'a>(
     file: &'a [u8],
-    source_type: &'a Option<SourceType>,
+    source_type: Option<&'a SourceType>,
 ) -> Result<RawSourceImage<'a>, WasmImageError> {
     match source_type {
         Some(SourceType::Raster(file_type)) => Ok(RawSourceImage::Raster(file, *file_type)),

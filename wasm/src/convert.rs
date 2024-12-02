@@ -29,7 +29,7 @@ fn process_image(
     img: &SourceImage,
     source_type: Option<ImageFormat>,
     target_type: Option<ImageFormat>,
-    settings: &Option<Settings>,
+    settings: Option<&Settings>,
 ) -> Result<image::DynamicImage, WasmImageError> {
     let img = img.rasterize(settings)?;
 
@@ -90,8 +90,8 @@ pub fn convert_image(
         &JsValue::from_str("Loading image"),
     );
 
-    let img =
-        load_image(&file, &src_mime_type).map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
+    let img = load_image(&file, src_mime_type.as_ref())
+        .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
     let _ = cb.call2(
         &this,
@@ -103,7 +103,7 @@ pub fn convert_image(
         &img,
         ImageFormat::from_mime_type(src_type),
         ImageFormat::from_mime_type(target_type),
-        &convert_settings,
+        convert_settings.as_ref(),
     )
     .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
