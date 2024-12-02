@@ -17,6 +17,7 @@ The `refilelabs/image` repository provides core utilities for image manipulation
 
 - **bun**: The package manager and runtime used within the **re;file labs** ecosystem.
 - **Rust**: For compiling WebAssembly components.
+- **wasm-pack**: For building and packaging WebAssembly modules.
 
 ### Installation
 
