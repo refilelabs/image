@@ -1,5 +1,5 @@
+import type { Settings } from '#image/wasm/pkg/image'
 import type { WorkerMessage, WorkerRequest, WorkerResponse } from './shared_types'
-import type { Settings } from '~/utils/settings'
 
 export type ConvertWorkerResponse = WorkerResponse<Uint8Array>
 export type ConvertWorkerMessage = WorkerMessage<ConvertWorkerResponse>

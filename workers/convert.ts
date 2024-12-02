@@ -6,8 +6,9 @@ import { WorkerMessageType } from './shared_types'
 globalThis.addEventListener(
   'message',
   (e: MessageEvent<ConvertWorkerRequest>) => {
+    callback(0, 'Initializing...')
+
     init().then(() => {
-      // eslint-disable-next-line ts/no-unsafe-assignment
       const { inputFile, inputType, outputType, settings } = e.data
 
       const res = convertImage(inputFile, inputType, outputType, callback, settings)

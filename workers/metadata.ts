@@ -6,6 +6,8 @@ import { WorkerMessageType } from './shared_types'
 globalThis.addEventListener(
   'message',
   (e: MessageEvent<MetadataWorkerRequest>) => {
+    callback(0, 'Initializing...')
+
     init().then(() => {
       const { inputFile, inputType } = e.data
 
