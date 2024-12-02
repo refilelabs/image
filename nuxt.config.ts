@@ -14,21 +14,9 @@ export default defineNuxtConfig({
 
   components: [
     { path: `${currentDir}/components`, prefix: layerName },
-    // ...layerList.filter((layer) => layer !== layerName).map((layer) => ({ path: `../${layer}/components`, pathPrefix: true })),
-    // getOtherLayers(layerName).map((layer) => ({ path: `../${layer}/components`, pathPrefix: true })),
   ],
 
   alias: {
     '#image': `${currentDir}`,
   },
-
-  // $env: {
-  //  $local: {
-  //    extends: ['../base'],
-  //  },
-  // },
-  //
-  // $production: {
-  //  extends: ['../base'],
-  // },
 })
