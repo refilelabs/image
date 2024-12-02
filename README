@@ -5,7 +5,9 @@ The `refilelabs/image` repository provides core utilities for image manipulation
 ## Features
 
 - **Image Conversion**: Convert images between various formats (e.g., JPEG, PNG, WebP).
-- **Image Resizing and Cropping**: Resize or crop images to desired dimensions.
+- **Image Editing**: Resize, crop, rotate, and flip images with ease. (Coming soon)
+- **Image Compression**: Compress images to reduce file size while maintaining quality.
+- **Image Viewing**: View images in a responsive, interactive viewer.
 - **Metadata Editing**: View and edit metadata for supported image formats.
 - **WebAssembly-Powered**: All operations run securely in the browser, leveraging WASM for speed and privacy.
 
@@ -13,9 +15,8 @@ The `refilelabs/image` repository provides core utilities for image manipulation
 
 ### Prerequisites
 
-- **Node.js**: Ensure you have Node.js installed.
+- **bun**: The package manager and runtime used within the **re;file labs** ecosystem.
 - **Rust**: For compiling WebAssembly components.
-- **Nuxt**: Frontend framework to integrate with the broader **re;file labs** ecosystem.
 
 ### Installation
 
@@ -26,13 +27,47 @@ The `refilelabs/image` repository provides core utilities for image manipulation
    ```
 
 2. Install dependencies (also builds WebAssembly modules):
+
+   **Using Bun**:
    ```bash
    bun i
    ```
 
-3. Start the development server:
+   **Using npm**:
+   ```bash
+   npm install
+   ```
+
+   **Using Yarn**:
+   ```bash
+   yarn install
+   ```
+
+   **Using pnpm**:
+   ```bash
+   pnpm install
+   ```
+
+1. Start the development server:
+
+   **Using Bun**:
    ```bash
    bun dev
+   ```
+
+   **Using npm**:
+   ```bash
+   npm run dev
+   ```
+
+   **Using Yarn**:
+   ```bash
+   yarn dev
+   ```
+
+   **Using pnpm**:
+   ```bash
+   pnpm dev
    ```
 
 ## Usage
