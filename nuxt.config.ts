@@ -6,11 +6,9 @@ export const layerName = 'image'
 const currentDir = dirname(fileURLToPath(import.meta.url))
 
 export default defineNuxtConfig({
-  // extends: [
-  //  'github:refilelabs/base',
-  // ],
-
-  extends: ['../base'],
+  extends: [
+   'github:refilelabs/base',
+  ],
 
   components: [
     { path: `${currentDir}/components`, prefix: layerName },
@@ -19,4 +17,10 @@ export default defineNuxtConfig({
   alias: {
     '#image': `${currentDir}`,
   },
+
+  $env: {
+    $local: {
+      extends: ['../base'],
+    },
+  }
 })
