@@ -40,7 +40,7 @@ const tabularMetadata = computed(() => {
   const otherKey = 'other'
 
   if (metadata.value) {
-    for (const [key, value] of Object.entries(metadata.value).filter(([key]) => key !== otherKey)) {
+    for (const [key, value] of Object.entries(metadata.value).filter(([key, value]) => key !== otherKey && value !== null && value !== undefined)) {
       data.push({ property: key, value: value.toString() })
     }
 
@@ -92,7 +92,23 @@ async function startExtraction() {
       }
 
       const result = await extractMetadata(arr, getFileMimeType(file.value))
-      metadata.value = result
+      metadata.value = {
+        ...result,
+        errors: null,
+      }
+
+      if (result.errors) {
+        const errors = Array.from(new Set(result.errors))
+
+        errors.forEach((error) => {
+          toast.add({
+            title: 'Invalid metadata',
+            icon: 'heroicons:exclamation-circle',
+            color: 'warning',
+            description: error,
+          })
+        })
+      }
 
       const endTime = performance.now()
 

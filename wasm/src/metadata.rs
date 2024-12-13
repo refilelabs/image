@@ -17,6 +17,7 @@ pub struct Metadata {
     pub width: u32,
     pub height: u32,
     pub other: Option<HashMap<String, String>>,
+    pub errors: Option<Vec<String>>,
 }
 
 impl TryFrom<RawSourceImage<'_>> for Metadata {
@@ -86,12 +87,26 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                 let metadata = if let Some(mut decoder) = decoder {
                     let (width, height) = decoder.dimensions();
 
+                    let mut errors = Vec::new();
+
                     let exif = decoder.exif_metadata().map_err(WasmImageError::LibError)?;
 
                     let other = if let Some(exif) = exif {
-                        let reader = exif::Reader::new();
+                        let mut reader = exif::Reader::new();
 
-                        let exif = reader.read_raw(exif).map_err(WasmImageError::ExifError)?;
+                        reader.continue_on_error(true);
+
+                        let exif = reader
+                            .read_raw(exif)
+                            .or_else(|e| {
+                                e.distill_partial_result(|exif_errors| {
+                                    errors = exif_errors
+                                        .iter()
+                                        .map(std::string::ToString::to_string)
+                                        .collect();
+                                })
+                            })
+                            .map_err(WasmImageError::ExifError)?;
 
                         let mut other = HashMap::new();
 
@@ -113,6 +128,11 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                         width,
                         height,
                         other,
+                        errors: if errors.is_empty() {
+                            None
+                        } else {
+                            Some(errors)
+                        },
                     }
                 } else {
                     let img = image::load_from_memory_with_format(img, format)
