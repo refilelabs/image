@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "latest",
-    "@nuxt/ui": "^3.0.0-alpha.9",
+    "@nuxt/ui": "^3.0.0-alpha.10",
     "@vueuse/core": "^11.2.0",
     "@vueuse/nuxt": "^11.2.0",
     "eslint": "^9.13.0",
