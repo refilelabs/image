@@ -85,10 +85,7 @@ export const supportedFormats = [
   { format: 'SVG', decoding: 'Yes', encoding: 'No' },
 ]
 
-// get type of format fields
-export type SupportedFormat = typeof supportedFormats[number]['format']
-
-export const formatEndingMapping: Record<SupportedFormat, string> = {
+export const formatEndingMapping = {
   AVIF: 'avif',
   BMP: 'bmp',
   Farbfeld: 'ff',
@@ -104,4 +101,7 @@ export const formatEndingMapping: Record<SupportedFormat, string> = {
   TIFF: 'tiff',
   WebP: 'webp',
   SVG: 'svg',
-}
+} as const
+
+export type FormatEndingKey = keyof typeof formatEndingMapping
+export type FormatEndingValue = typeof formatEndingMapping[FormatEndingKey]

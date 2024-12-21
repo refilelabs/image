@@ -109,7 +109,7 @@ onMounted(() => {
               maxHeight: `${maxHeight}px`,
             }"
           />
-          <span class="absolute top-0 left-0 p-2 bg-[var(--ui-bg-acc>ented)] text-[var(--ui-text-toned)]">{{ file?.name }}</span>
+          <span class="absolute top-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ file?.name }}</span>
           <span class="absolute bottom-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ formatBytes(file?.size || 0) }}</span>
           <div class="absolute bottom-0 right-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] grid grid-cols-2">
             <span>Dimensions:</span> <span>{{ imageData.width }}x{{ imageData.height }}</span>
