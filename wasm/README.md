@@ -125,6 +125,13 @@ const converted = convertImage(file, srcType, targetType, (progress) => console.
 console.log('Converted Image:', converted);
 ```
 
+**Note:** When using the library in a Node.js environment, you need to initialize the wasm module as follows (see [issue](https://github.com/refilelabs/image/issues/6)):
+```javascript
+const wasmBuffer = fs.readFileSync('node_modules/@refilelabs/image/image_bg.wasm')
+
+await init(wasmBuffer)
+```
+
 ## License
 
 MIT
