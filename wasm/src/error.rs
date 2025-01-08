@@ -13,6 +13,8 @@ pub enum WasmImageError {
     SvgError(#[from] SvgError),
     #[error("Encoding error: {0}")]
     EncodingError(String),
+    #[error("Decoder error: Could not create {0} decoder: {1}")]
+    DecoderError(String, String),
     #[error("Exif error: {0}")]
     ExifError(#[from] exif::Error),
 }
