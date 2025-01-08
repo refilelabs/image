@@ -1,6 +1,10 @@
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    io::{BufReader, Cursor},
+};
 
-use image::{GenericImageView, ImageDecoder, ImageFormat};
+use exif::Exif;
+use image::{codecs, GenericImageView, ImageDecoder, ImageFormat};
 use js_sys::Uint8Array;
 use resvg::usvg::Options;
 use wasm_bindgen::prelude::*;
@@ -20,119 +24,147 @@ pub struct Metadata {
     pub errors: Option<Vec<String>>,
 }
 
+fn exif_to_hashmap(exif: &Exif) -> HashMap<String, String> {
+    exif.fields()
+        .map(|field| {
+            (
+                field.tag.description().unwrap_or_default().to_string(),
+                field.value.display_as(field.tag).to_string(),
+            )
+        })
+        .collect()
+}
+
+fn get_decoder<'a>(
+    format: ImageFormat,
+    img: &'a [u8],
+) -> Result<Box<dyn ImageDecoder + 'a>, WasmImageError> {
+    let decoder: Box<dyn ImageDecoder> = match format {
+        ImageFormat::Bmp => Box::new(
+            codecs::bmp::BmpDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("BMP".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Gif => Box::new(
+            codecs::gif::GifDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("GIF".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Ico => Box::new(
+            codecs::ico::IcoDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("ICO".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Jpeg => Box::new(
+            codecs::jpeg::JpegDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("JPEG".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::OpenExr => Box::new(
+            codecs::openexr::OpenExrDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("OpenEXR".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Png => Box::new(
+            codecs::png::PngDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("PNG".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Tiff => Box::new(
+            codecs::tiff::TiffDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("TIFF".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::WebP => Box::new(
+            codecs::webp::WebPDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("WebP".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Dds => Box::new(
+            codecs::dds::DdsDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("DDS".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Farbfeld => Box::new(
+            codecs::farbfeld::FarbfeldDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("Farbfeld".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Hdr => Box::new(
+            codecs::hdr::HdrDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("HDR".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Qoi => Box::new(
+            codecs::qoi::QoiDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("QOI".to_string(), e.to_string()))?,
+        ),
+        ImageFormat::Tga => Box::new(
+            codecs::tga::TgaDecoder::new(Cursor::new(img))
+                .map_err(|e| WasmImageError::DecoderError("TGA".to_string(), e.to_string()))?,
+        ),
+        _ => {
+            return Err(WasmImageError::DecoderError(
+                "Unknown".to_string(),
+                format!("Unknown format: {format:?}"),
+            ))
+        }
+    };
+
+    Ok(decoder)
+}
+
+fn get_exif_errors(error: exif::Error) -> Result<Vec<String>, WasmImageError> {
+    let mut errors = Vec::new();
+    error
+        .distill_partial_result(|exif_errors| {
+            errors = exif_errors
+                .iter()
+                .map(std::string::ToString::to_string)
+                .collect();
+        })
+        .map_err(WasmImageError::ExifError)?;
+    Ok(errors)
+}
+
 impl TryFrom<RawSourceImage<'_>> for Metadata {
     type Error = WasmImageError;
 
-    #[allow(clippy::too_many_lines)]
     fn try_from(img: RawSourceImage) -> Result<Self, Self::Error> {
         match img {
             RawSourceImage::Raster(img, format) => {
                 // See https://docs.rs/image/latest/image/trait.ImageDecoder.html#implementors
-                let decoder: Option<Box<dyn ImageDecoder>> = match format {
-                    ImageFormat::Bmp => Some(Box::new(
-                        image::codecs::bmp::BmpDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Gif => Some(Box::new(
-                        image::codecs::gif::GifDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Ico => Some(Box::new(
-                        image::codecs::ico::IcoDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Jpeg => Some(Box::new(
-                        image::codecs::jpeg::JpegDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::OpenExr => Some(Box::new(
-                        image::codecs::openexr::OpenExrDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Png => Some(Box::new(
-                        image::codecs::png::PngDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Tiff => Some(Box::new(
-                        image::codecs::tiff::TiffDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::WebP => Some(Box::new(
-                        image::codecs::webp::WebPDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Dds => Some(Box::new(
-                        image::codecs::dds::DdsDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Farbfeld => Some(Box::new(
-                        image::codecs::farbfeld::FarbfeldDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Hdr => Some(Box::new(
-                        image::codecs::hdr::HdrDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Qoi => Some(Box::new(
-                        image::codecs::qoi::QoiDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    ImageFormat::Tga => Some(Box::new(
-                        image::codecs::tga::TgaDecoder::new(std::io::Cursor::new(img))
-                            .map_err(WasmImageError::LibError)?,
-                    )),
-                    _ => None,
-                };
+                let decoder = get_decoder(format, img).ok();
 
                 let metadata = if let Some(mut decoder) = decoder {
                     let (width, height) = decoder.dimensions();
 
-                    let mut errors = Vec::new();
+                    let mut reader = exif::Reader::new();
+                    reader.continue_on_error(true);
 
-                    let exif = decoder.exif_metadata().map_err(WasmImageError::LibError)?;
-
-                    let other = if let Some(exif) = exif {
-                        let mut reader = exif::Reader::new();
-
-                        reader.continue_on_error(true);
-
-                        let exif = reader
-                            .read_raw(exif)
-                            .or_else(|e| {
-                                e.distill_partial_result(|exif_errors| {
-                                    errors = exif_errors
-                                        .iter()
-                                        .map(std::string::ToString::to_string)
-                                        .collect();
-                                })
+                    let exif = match format {
+                        // Also HEIF, HEIC, not supported by image-rs though
+                        ImageFormat::Tiff
+                        | ImageFormat::Jpeg
+                        | ImageFormat::Avif
+                        | ImageFormat::Png
+                        | ImageFormat::WebP => {
+                            let data_reader = Cursor::new(img);
+                            let mut data_reader = BufReader::new(data_reader);
+                            reader.read_from_container(&mut data_reader).map_err(|e| {
+                                get_exif_errors(e).unwrap_or_else(|e| vec![e.to_string()])
                             })
-                            .map_err(WasmImageError::ExifError)?;
-
-                        let mut other = HashMap::new();
-
-                        for field in exif.fields() {
-                            let field_name = field.tag.description();
-                            let field_value = field.value.display_as(field.tag);
-                            other.insert(
-                                field_name.unwrap_or_default().to_string(),
-                                field_value.to_string(),
-                            );
                         }
+                        _ => {
+                            if let Ok(Some(exif)) = decoder.exif_metadata() {
+                                reader.read_raw(exif).map_err(|e| {
+                                    get_exif_errors(e).unwrap_or_else(|e| vec![e.to_string()])
+                                })
+                            } else {
+                                Err(Vec::new())
+                            }
+                        }
+                    };
 
-                        Some(other)
-                    } else {
-                        None
+                    let (other, errors) = match exif {
+                        Ok(exif) => (Some(exif_to_hashmap(&exif)), None),
+                        Err(errors) => (None, Some(errors)),
                     };
 
                     Self {
                         width,
                         height,
                         other,
-                        errors: if errors.is_empty() {
-                            None
-                        } else {
-                            Some(errors)
-                        },
+                        errors,
                     }
                 } else {
                     let img = image::load_from_memory_with_format(img, format)
@@ -222,8 +254,8 @@ mod tests {
     #[test]
     fn test_load_metadata() {
         let file = include_bytes!("../assets/test.jpeg");
-        let mut decoder = image::codecs::jpeg::JpegDecoder::new(std::io::Cursor::new(file))
-            .expect("Failed to create decoder");
+        let mut decoder =
+            codecs::jpeg::JpegDecoder::new(Cursor::new(file)).expect("Failed to create decoder");
 
         let exif = decoder
             .exif_metadata()
@@ -246,5 +278,21 @@ mod tests {
             );
         }
         println!("{hashmap:?}");
+    }
+
+    #[test]
+    fn test_load_webp_metadata() {
+        let file = include_bytes!("../assets/exif.webp");
+
+        let mut reader = exif::Reader::new();
+        reader.continue_on_error(true);
+
+        let exif = reader
+            .read_from_container(&mut BufReader::new(Cursor::new(file)))
+            .expect("Failed to read EXIF data");
+
+        for field in exif.fields() {
+            println!("{field:?}");
+        }
     }
 }
