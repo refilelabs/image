@@ -4,11 +4,15 @@ use crate::error::WasmImageError;
 use crate::load::{load_image, SourceImage};
 use crate::source_type::SourceType;
 use image::ImageFormat;
-use js_sys::Uint8Array;
-use settings::Settings;
-use wasm_bindgen::prelude::*;
+pub use settings::Settings;
 
-pub(crate) mod settings;
+#[cfg(feature = "wasm")] 
+use {
+    js_sys::Uint8Array,
+    wasm_bindgen::prelude::*,
+};
+
+pub mod settings;
 pub(crate) mod svg;
 
 fn write_image(
@@ -55,7 +59,9 @@ fn process_image(
     Ok(processed)
 }
 
+#[cfg(feature = "wasm")]
 #[wasm_bindgen(js_name = convertImage)]
+#[allow(clippy::needless_pass_by_value)]
 /// Convert an image from one format to another.
 /// # Arguments
 /// * `file` - The image file to convert.
@@ -123,4 +129,36 @@ pub fn convert_image(
     );
 
     Ok(Uint8Array::from(output.as_slice()))
+}
+
+#[cfg(not(feature = "wasm"))]
+/// Convert an image from one format to another.
+/// # Arguments
+/// * `file` - The image file to convert.
+/// * `src_type` - The MIME type of the source image.
+/// * `target_type` - The MIME type of the target image.
+/// * `convert_settings` - Settings for the conversion.
+/// # Errors
+/// Returns an error if the conversion fails.
+/// # Example
+/// ```rust
+/// ```
+pub fn convert_image(
+    file: &[u8],
+    src_type: &str,
+    target_type: &str,
+    convert_settings: &Option<Settings>,
+) -> Result<Vec<u8>, WasmImageError> {
+    let src_mime_type = SourceType::from_mime_type(src_type);
+
+    let img = load_image(file, src_mime_type.as_ref())?;
+
+    let img = process_image(
+        &img,
+        ImageFormat::from_mime_type(src_type),
+        ImageFormat::from_mime_type(target_type),
+        convert_settings.as_ref(),
+    )?;
+
+    write_image(&img, ImageFormat::from_mime_type(target_type))
 }

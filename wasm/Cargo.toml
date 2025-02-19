@@ -1,5 +1,5 @@
 [package]
-name = "image"
+name = "refilelabs-image"
 version = "0.2.1"
 edition = "2021"
 repository = "https://github.com/refilelabs/image"
@@ -9,24 +9,27 @@ license-file = "../LICENSE"
 readme = "./README.md"
 description = "Wasm-based image processing library developed by re;file labs"
 
+[features]
+wasm = ["wasm-bindgen", "js-sys", "web-sys", "tsify"]
+default = []
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "lib"]
 
 [dependencies]
 image = "0.25.5"
-js-sys = "0.3.73"
+js-sys = { version = "0.3.73", optional = true }
 kamadak-exif = "0.6.1"
 resvg = { version = "0.44.0", default-features = false, features = [
   "text",
   "raster-images",
 ] }
 serde = { version = "1.0.215", features = ["serde_derive"] }
-serde_json = { version = "1.0.133", default-features = false }
+serde_json = { version = "1.0.133" }
 thiserror = "2.0.3"
-tsify = "0.4.5"
-wasm-bindgen = "0.2.96"
-web-sys = { version = "0.3.73", features = ["Blob"] }
+tsify = { version = "0.4.5", optional = true }
+wasm-bindgen = { version = "0.2.96", optional = true }
+web-sys = { version = "0.3.73", features = ["Blob"], optional = true }
 
 [profile.release]
 lto = true

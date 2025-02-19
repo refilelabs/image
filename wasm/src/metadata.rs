@@ -5,9 +5,7 @@ use std::{
 
 use exif::Exif;
 use image::{codecs, GenericImageView, ImageDecoder, ImageFormat};
-use js_sys::Uint8Array;
 use resvg::usvg::Options;
-use wasm_bindgen::prelude::*;
 
 use crate::{
     error::WasmImageError,
@@ -15,8 +13,15 @@ use crate::{
     source_type::SourceType,
 };
 
-#[derive(tsify::Tsify, serde::Deserialize, serde::Serialize, Default)]
-#[tsify(from_wasm_abi, into_wasm_abi)]
+#[cfg(feature = "wasm")] 
+use {
+    js_sys::Uint8Array,
+    wasm_bindgen::prelude::*,
+};
+
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
+#[derive(serde::Deserialize, serde::Serialize, Default)]
 pub struct Metadata {
     pub width: u32,
     pub height: u32,
@@ -193,6 +198,7 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
     }
 }
 
+#[cfg(feature = "wasm")]
 #[wasm_bindgen(js_name = loadMetadata)]
 /// Loads the metadata of an image file.
 /// # Arguments
@@ -245,6 +251,23 @@ pub fn load_metadata(
     );
 
     Ok(metadata)
+}
+
+#[cfg(not(feature = "wasm"))]
+/// Loads the metadata of an image file.
+/// # Arguments
+/// * `file` - The image file to convert.
+/// * `src_type` - The MIME type of the source image.
+/// # Returns
+/// The metadata of the image.
+/// # Errors
+/// Returns an error if the metadata could not be loaded.
+pub fn load_metadata(file: &[u8], src_type: &str) -> Result<Metadata, WasmImageError> {
+    let src_type = SourceType::from_mime_type(src_type);
+
+    let img = load_raw_image(file, src_type.as_ref())?;
+
+    Metadata::try_from(img)
 }
 
 #[cfg(test)]

@@ -3,7 +3,7 @@
 # Update the "name" field in pkg/package.json files
 
 # Define the old and new names
-OLD_NAME='"name": "image"'
+OLD_NAME='"name": "refilelabs-image"'
 NEW_NAME='"name": "@refilelabs/image"'
 
 # Find all pkg/package.json files and update the "name" field

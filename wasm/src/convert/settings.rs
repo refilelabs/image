@@ -1,3 +1,4 @@
+#[cfg(feature = "wasm")]
 #[derive(tsify::Tsify, serde::Deserialize, serde::Serialize)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 #[serde(tag = "type")]
@@ -6,8 +7,15 @@ pub enum Settings {
     Svg(SvgSettings),
 }
 
-#[derive(tsify::Tsify, serde::Deserialize, serde::Serialize, Copy, Clone)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[cfg(not(feature = "wasm"))]
+#[derive(Clone, Copy, serde::Deserialize, serde::Serialize)]
+pub enum Settings {
+    Svg(SvgSettings),
+}
+
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi, from_wasm_abi))]
+#[derive(Clone, Copy, serde::Deserialize, serde::Serialize)]
 pub struct SvgSettings {
     pub width: u32,
     pub height: u32,

@@ -10,7 +10,7 @@
     "generate": "nuxt generate .playground",
     "preview": "nuxt preview .playground",
     "postinstall": "nuxt prepare .playground && bun run wasm:bundle",
-    "wasm:bundle": "cd wasm && wasm-pack build --target web --release",
+    "wasm:bundle": "cd wasm && wasm-pack build --target web --release --features wasm",
     "wasm:publish": "bun run wasm:bundle && wasm/rename-package.sh && wasm-pack pack wasm/pkg && wasm-pack publish wasm/pkg --tag next --access public",
     "lint": "eslint ."
   },
