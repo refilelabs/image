@@ -1,11 +1,13 @@
 use crate::{load::load_image, source_type::SourceType};
-use crate::error::WasmImageError;
 
 #[cfg(feature = "wasm")] 
 use {
     js_sys::Uint8Array,
     wasm_bindgen::prelude::*,
 };
+
+#[cfg(not(feature = "wasm"))]
+use crate::error::WasmImageError;
 
 #[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
