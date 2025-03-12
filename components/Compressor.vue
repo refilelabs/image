@@ -160,7 +160,7 @@ watch(compressionSettings, () => {
   immediate: true,
 })
 
-async function download() {
+async function compress() {
   const blob = await createBlob(compressedCanvas.value!, compressionSettings.type, compressionSettings.quality)
   const arrayBuffer = await blob.arrayBuffer()
 
@@ -247,8 +247,8 @@ onMounted(() => {
     </InputsMinimal>
 
     <div class="flex flex-row justify-end pt-3">
-      <UButton class="cursor-pointer" :disabled="!file && !imageData.pixels" trailing-icon="heroicons:arrow-down-tray" @click="download">
-        Download Compressed Image
+      <UButton class="cursor-pointer" :disabled="!file && !imageData.pixels" trailing-icon="heroicons:arrow-down-tray" @click="compress">
+        Start Compression
       </UButton>
     </div>
 
