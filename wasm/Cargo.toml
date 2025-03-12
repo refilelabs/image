@@ -1,6 +1,6 @@
 [package]
 name = "refilelabs-image"
-version = "0.2.3"
+version = "0.2.5"
 edition = "2021"
 repository = "https://github.com/refilelabs/image"
 homepage = "https://refilelabs.com/image"

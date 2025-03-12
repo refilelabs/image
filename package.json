@@ -10,8 +10,10 @@
     "generate": "nuxt generate .playground",
     "preview": "nuxt preview .playground",
     "postinstall": "nuxt prepare .playground && bun run wasm:bundle",
+    "rust:publish": "cd wasm && cargo publish",
     "wasm:bundle": "cd wasm && wasm-pack build --target web --release --features wasm",
     "wasm:publish": "bun run wasm:bundle && bun run wasm/scripts/adjust-npm-pkg.ts && wasm-pack pack wasm/pkg && wasm-pack publish wasm/pkg --tag latest --access public",
+    "publish": "bun run wasm:publish && bun run rust:publish",
     "lint": "eslint ."
   },
   "devDependencies": {
