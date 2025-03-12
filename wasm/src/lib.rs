@@ -5,14 +5,17 @@
     clippy::cast_sign_loss,
     clippy::cast_possible_truncation
 )]
+#![forbid(unsafe_code)]
 
-pub(crate) mod convert;
-pub(crate) mod error;
+pub mod convert;
+pub mod error;
 pub(crate) mod load;
-pub(crate) mod metadata;
+pub mod metadata;
 pub(crate) mod source_type;
-pub(crate) mod view;
+pub mod view;
 
-pub use convert::convert_image;
-pub use metadata::load_metadata;
-pub use view::get_pixels;
+pub use {
+    convert::convert_image,
+    metadata::load_metadata,
+    view::get_pixels,
+};

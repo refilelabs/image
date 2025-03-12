@@ -1,13 +1,19 @@
-# @refilelabs/image
+# refilelabs-image
 
-A WebAssembly-powered library for advanced image manipulation and format conversion. This package provides tools for loading image metadata, converting images, and retrieving raw pixel data—all in the browser or Node.js environment.
+[![Crates.io](https://img.shields.io/crates/v/refilelabs-image.svg)](https://crates.io/crates/refilelabs-image)
+[![Documentation](https://docs.rs/refilelabs-image/badge.svg)](https://docs.rs/refilelabs-image)
+
+A Rust library for advanced image manipulation and format conversion. This crate provides tools for loading image metadata, converting images, and retrieving raw pixel data.
 
 It is used under the hood at [re;file labs' image tools](https://refilelabs.com/image) to power the different image processing features.
 
 ## Installation
 
-```bash
-npm install @refilelabs/image
+Add this to your `Cargo.toml`:
+
+```toml
+[dependencies]
+refilelabs-image = "0.1.0"  # Replace with actual version
 ```
 
 ## Features
@@ -17,119 +23,115 @@ npm install @refilelabs/image
 - Convert images between different formats
 - Supports custom conversion settings
 
+## Important Note
+
+The main API functions are only available when the crate is not compiled with the 
+
+wasm
+
+ feature. These functions are designed for native Rust usage.
+
 ## API Reference
 
-### `loadMetadata(file: Uint8Array, src_type: string, cb: Function): Metadata`
-
-Loads the metadata of an image file.
-
-#### Parameters:
-- `file` (`Uint8Array`): The image file to analyze.
-- `src_type` (`string`): The MIME type of the source image (e.g., `image/png`, `image/jpeg`).
-- `cb` (`Function`): A callback function to report progress.
-
-#### Returns:
-- `Metadata`: An object containing image metadata (e.g., width, height, other information).
-
----
-
-### `getPixels(file: Uint8Array, src_type: string): ImageData`
-
-Converts an image file to raw RGBA pixel data.
-
-#### Parameters:
-- `file` (`Uint8Array`): The image file to convert.
-- `src_type` (`string`): The MIME type of the source image.
-
-#### Returns:
-- `ImageData`: An object containing raw pixel data and image properties (e.g., width, height, color depth).
-
----
-
-### `convertImage(file: Uint8Array, src_type: string, target_type: string, cb: Function, convert_settings?: Settings): Uint8Array`
+### `convert_image(file: &[u8], src_type: &str, target_type: &str, convert_settings: &Option<Settings>) -> Result<Vec<u8>, WasmImageError>`
 
 Converts an image from one format to another.
 
 #### Parameters:
-- `file` (`Uint8Array`): The image file to convert.
-- `src_type` (`string`): The MIME type of the source image.
-- `target_type` (`string`): The target MIME type (e.g., `image/webp`, `image/png`).
-- `cb` (`Function`): A callback function to report progress.
-- `convert_settings` (`Settings`, optional): Settings for the conversion (e.g., for SVG).
+- `file` (`&[u8]`): The image file to convert
+- `src_type` (`&str`): The MIME type of the source image (e.g., `"image/png"`)
+- `target_type` (`&str`): The target MIME type (e.g., `"image/webp"`)
+- `convert_settings` (`&Option<Settings>`): Settings for the conversion
 
 #### Returns:
-- `Uint8Array`: The converted image data.
+- `Result<Vec<u8>, WasmImageError>`: The converted image data or an error
 
 ---
 
-### Interfaces
+### `load_metadata(file: &[u8], src_type: &str) -> Result<Metadata, WasmImageError>`
 
-#### `Metadata`
+Loads the metadata of an image file.
+
+#### Parameters:
+- `file` (`&[u8]`): The image file to analyze
+- `src_type` (`&str`): The MIME type of the source image
+
+#### Returns:
+- `Result<Metadata, WasmImageError>`: An object containing image metadata or an error
+
+---
+
+### `get_pixels(file: &[u8], src_type: &str) -> Result<ImageData, WasmImageError>`
+
+Converts an image file to raw RGBA pixel data.
+
+#### Parameters:
+- `file` (`&[u8]`): The image file to convert
+- `src_type` (`&str`): The MIME type of the source image
+
+#### Returns:
+- `Result<ImageData, WasmImageError>`: An object containing raw pixel data and image properties or an error
+
+---
+
+## Data Structures
+
+### `Metadata`
 
 Represents metadata of an image.
 
-- `width` (`number`): Image width.
-- `height` (`number`): Image height.
-- `other` (`Record<string, string> | null`): Additional metadata.
+- `width` (`u32`): Image width
+- `height` (`u32`): Image height
+- `other` (`Option<HashMap<String, String>>`): Additional metadata
 
 ---
 
-#### `ImageData`
+### `ImageData`
 
 Represents raw image data.
 
-- `width` (`number`): Image width.
-- `height` (`number`): Image height.
-- `aspect_ratio` (`number`): Aspect ratio.
-- `color_depth` (`number`): Color depth.
-- `pixels` (`number[]`): Raw RGBA pixel values.
+- `width` (`u32`): Image width
+- `height` (`u32`): Image height
+- `aspect_ratio` (`f32`): Aspect ratio
+- `color_depth` (`u8`): Color depth
+- `pixels` (`Vec<u8>`): Raw RGBA pixel values
 
 ---
 
-#### `SvgSettings`
-
-Settings specific to SVG format.
-
-- `width` (`number`): SVG width.
-- `height` (`number`): SVG height.
-
----
-
-#### `Settings`
+### `Settings`
 
 Settings for conversion.
 
-- `type`: `"svg"` for SVG settings.
-- Includes all properties of `SvgSettings`.
+- Contains various settings depending on the image format
 
 ---
 
 ## Usage Example
 
-```javascript
-import init, { loadMetadata, getPixels, convertImage } from '@refilelabs/image';
+```rust
+use refilelabs_image::{convert_image, get_pixels, load_metadata, Settings};
+use std::fs;
 
-await init();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Read image file
+    let file = fs::read("input.png")?;
+    let src_type = "image/png";
+    let target_type = "image/webp";
 
-const file = new Uint8Array(/* ... */);
-const srcType = 'image/png';
-const targetType = 'image/webp';
+    // Get metadata
+    let metadata = load_metadata(&file, src_type)?;
+    println!("Image dimensions: {}x{}", metadata.width, metadata.height);
 
-const metadata = loadMetadata(file, srcType, (progress) => console.log(`Progress: ${progress}%`));
-console.log('Metadata:', metadata);
+    // Get pixel data
+    let image_data = get_pixels(&file, src_type)?;
+    println!("Image has {} pixels", image_data.pixels.len() / 4);
 
-const imageData = getPixels(file, srcType);
-console.log('Image Data:', imageData);
-
-const converted = convertImage(file, srcType, targetType, (progress) => console.log(`Progress: ${progress}%`));
-console.log('Converted Image:', converted);
-```
-
-**Note:** When using the library in a Node.js environment, you need to initialize the wasm module as follows (see [issue](https://github.com/refilelabs/image/issues/6)):
-```javascript
-const wasmBuffer = fs.readFileSync('node_modules/@refilelabs/image/image_bg.wasm')
-
-await init(wasmBuffer)
+    // Convert image
+    let converted = convert_image(&file, src_type, target_type, &None)?;
+    fs::write("output.webp", converted)?;
+    
+    Ok(())
+}
 ```
 
 ## License

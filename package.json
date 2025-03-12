@@ -10,17 +10,21 @@
     "generate": "nuxt generate .playground",
     "preview": "nuxt preview .playground",
     "postinstall": "nuxt prepare .playground && bun run wasm:bundle",
-    "wasm:bundle": "cd wasm && wasm-pack build --target web --release",
-    "wasm:publish": "bun run wasm:bundle && wasm/rename-package.sh && wasm-pack pack wasm/pkg && wasm-pack publish wasm/pkg --tag next --access public",
+    "rust:publish": "cd wasm && cargo publish",
+    "wasm:bundle": "cd wasm && wasm-pack build --target web --release --features wasm",
+    "wasm:publish": "bun run wasm:bundle && bun run wasm/scripts/adjust-npm-pkg.ts && wasm-pack pack wasm/pkg && wasm-pack publish wasm/pkg --tag latest --access public",
+    "publish": "bun run wasm:publish && bun run rust:publish",
     "lint": "eslint ."
   },
   "devDependencies": {
     "@nuxt/eslint": "latest",
     "@nuxt/ui": "^3.0.0-alpha.10",
+    "@types/bun": "^1.2.5",
     "@vueuse/core": "^11.2.0",
     "@vueuse/nuxt": "^11.2.0",
     "eslint": "^9.13.0",
     "nuxt": "^3.14.1592",
+    "pkg-types": "^2.1.0",
     "typescript": "^5.6.3",
     "vue": "latest"
   }

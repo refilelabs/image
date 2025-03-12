@@ -1,5 +1,9 @@
 # refilelabs/image
 
+[![Crates.io](https://img.shields.io/crates/v/refilelabs-image.svg)](https://crates.io/crates/refilelabs-image)
+[![Documentation](https://docs.rs/refilelabs-image/badge.svg)](https://docs.rs/refilelabs-image)
+[![NPM Version](https://img.shields.io/npm/v/%40refilelabs%2Fimage)](https://www.npmjs.com/package/@refilelabs/image)
+
 The `refilelabs/image` repository provides core utilities for image manipulation within the [**re;file labs**](https://refilelabs.com) platform. It offers robust, high-performance image processing features powered by WebAssembly (WASM) for secure, browser-based operations.
 
 ## Features
