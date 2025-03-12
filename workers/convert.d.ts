@@ -1,4 +1,4 @@
-import type { Settings } from '#image/wasm/pkg/image'
+import type { Settings } from '#image/wasm/pkg/refilelabs_image'
 import type { WorkerMessage, WorkerRequest, WorkerResponse } from './shared_types'
 
 export type ConvertWorkerResponse = WorkerResponse<Uint8Array>

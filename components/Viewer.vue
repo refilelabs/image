@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { acceptList } from '#image/utils/file_types'
-import init, { getPixels, type ImageData } from '#image/wasm/pkg/image'
+import init, { getPixels, type ImageData } from '#image/wasm/pkg/refilelabs_image'
 
 export interface ViewerData {
   width: number

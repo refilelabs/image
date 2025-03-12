@@ -1,5 +1,5 @@
 import type { ConvertWorkerMessage, ConvertWorkerRequest, ConvertWorkerResponse } from './convert.d'
-import init, { convertImage } from '#image/wasm/pkg/image'
+import init, { convertImage } from '#image/wasm/pkg/refilelabs_image'
 
 import { WorkerMessageType } from './shared_types'
 

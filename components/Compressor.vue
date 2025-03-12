@@ -2,7 +2,7 @@
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { CompressionSettings } from './CompressionSettings.vue'
 import { acceptList } from '#image/utils/file_types'
-import init, { getPixels, type ImageData } from '#image/wasm/pkg/image'
+import init, { getPixels, type ImageData } from '#image/wasm/pkg/refilelabs_image'
 import { breakpointsTailwind } from '@vueuse/core'
 
 export interface CompressionData {
@@ -170,10 +170,12 @@ async function download() {
   const returnedFile = new File([new Uint8Array(arrayBuffer)], `${fileNameWithoutExtension}.${extension}`, { type: compressionSettings.type })
 
   emit('compress', {
-    inputType: getFileMimeType(file.value as File),
-    outputType: compressionSettings.type,
-    savings: (1 - (compressedSize.value! / (file.value?.size || 1))) * 100,
-    quality: compressionSettings.quality,
+    file: returnedFile,
+    metrics: {
+      inputType: getFileMimeType(file.value as File),
+      outputType: compressionSettings.type,
+      savings: (1 - (compressedSize.value! / (file.value?.size || 1))) * 100,
+      quality: compressionSettings.quality,
     },
   })
 }
