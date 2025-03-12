@@ -12,6 +12,8 @@ export interface CompressionData {
   quality: number
 }
 
+export type CompressionResult = ImageActionResult<CompressionData>
+
 const props = withDefaults(defineProps<{
   initFile?: File
   initOutputType?: string
@@ -21,7 +23,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  compress: [opts: CompressionData]
+  compress: [opts: CompressionResult]
 }>()
 
 const toast = useToast()
@@ -165,13 +167,14 @@ async function download() {
   const fileNameWithoutExtension = file.value?.name.replace(/\.[^/.]+$/, '')
   const extension = compressionSettings.type.split('/')[1]
 
-  startDownload(new Uint8Array(arrayBuffer), `${fileNameWithoutExtension}-compressed.${extension}`)
+  const returnedFile = new File([new Uint8Array(arrayBuffer)], `${fileNameWithoutExtension}.${extension}`, { type: compressionSettings.type })
 
   emit('compress', {
     inputType: getFileMimeType(file.value as File),
     outputType: compressionSettings.type,
     savings: (1 - (compressedSize.value! / (file.value?.size || 1))) * 100,
     quality: compressionSettings.quality,
+    },
   })
 }
 
