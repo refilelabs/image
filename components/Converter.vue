@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SVGData } from '#image/utils/dimensions'
-import type { SvgSettings } from '#image/wasm/pkg/image'
+import type { ImageActionResult } from '#image/utils/image_action_callback'
+import type { SvgSettings } from '#image/wasm/pkg/refilelabs_image'
 // https://github.com/eliaSchenker/nuxt-webworker/blob/main/plugins/sw.ts
 import type { ConvertWorkerMessage, ConvertWorkerRequest } from '#image/workers/convert.d'
 import type { AlertProps } from '@nuxt/ui'
@@ -14,6 +15,8 @@ export interface ConversionData {
   duration: number
 }
 
+export type ConversionResult = ImageActionResult<ConversionData>
+
 const props = withDefaults(defineProps<{
   initFile?: File
   initOutputType?: string
@@ -23,7 +26,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  convert: [opts: ConversionData]
+  convert: [opts: ConversionResult]
 }>()
 
 const toast = useToast()
@@ -127,19 +130,12 @@ async function startConversion() {
 
       const result = await convert(arr, getFileMimeType(file.value), outputType.value as keyof typeof outputFileEndings)
 
-      if (result && result.length)
-        startDownload(result, `converted.${inputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
-
       const endTime = performance.now()
+      const blob = new Blob([result], { type: outputType.value })
+      const fileName = removeFileExtension(file.value.name)
+      const outputFile = new File([blob], `converted-${fileName}.${outputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
 
-      emit('convert', { inputType: file.value.type, outputType: outputType.value, duration: endTime - startTime })
-
-      toast.add({
-        title: 'Success',
-        icon: 'heroicons:check-circle',
-        description: `Conversion completed successfully in ${(endTime - startTime).toFixed(2)}ms`,
-        color: 'success',
-      })
+      emit('convert', { metrics: { inputType: file.value.type, outputType: outputType.value, duration: endTime - startTime }, file: outputFile })
     }
     catch (e) {
       let error = (e as any).message || (e as any).toString()
