@@ -5,9 +5,9 @@ const props = defineProps<{
 
 const x = useVModel(props)
 
-const container = ref<HTMLElement | null>(null)
+const container = useTemplateRef('container')
 
-const draggable = ref<HTMLElement | null>(null)
+const draggable = useTemplateRef('draggable')
 
 const style = ref<string>('')
 

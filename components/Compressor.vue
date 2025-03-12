@@ -34,11 +34,11 @@ const progress = ref<WorkerProgress>()
 
 const x = ref<number>(0)
 
-const container = ref<HTMLDivElement | null>(null)
+const container = useTemplateRef('container')
 
 const { width: maxWidth, height: maxHeight } = useElementBounding(container)
 
-const canvas = ref<HTMLCanvasElement | null>(null)
+const canvas = useTemplateRef('canvas')
 
 const { height, width, left, right } = useElementBounding(canvas)
 
@@ -78,7 +78,7 @@ async function createBlob(canvas: HTMLCanvasElement, type: string, quality: numb
   })
 }
 
-const compressedCanvas = ref<HTMLCanvasElement | null>(null)
+const compressedCanvas = useTemplateRef('compressedCanvas')
 
 const compressedSize = ref<number>()
 

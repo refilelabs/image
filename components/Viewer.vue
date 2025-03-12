@@ -27,11 +27,11 @@ const toast = useToast()
 
 const file = ref<File | undefined>(props.initFile)
 
-const container = ref<HTMLDivElement | null>(null)
+const container = useTemplateRef('container')
 
 const { width: maxWidth, height: maxHeight } = useElementBounding(container)
 
-const canvas = ref<HTMLCanvasElement | null>(null)
+const canvas = useTemplateRef('canvas')
 
 const imageData = reactive<Partial<Omit<ImageData, 'pixels'>>>({
   width: undefined,
