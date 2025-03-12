@@ -1,4 +1,5 @@
 # @refilelabs/image
+[![NPM Version](https://img.shields.io/npm/v/%40refilelabs%2Fimage)](https://www.npmjs.com/package/@refilelabs/image)
 
 A WebAssembly-powered library for advanced image manipulation and format conversion. This package provides tools for loading image metadata, converting images, and retrieving raw pixel data—all in the browser or Node.js environment.
 

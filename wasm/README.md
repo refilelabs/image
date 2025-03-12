@@ -5,6 +5,8 @@
 
 A Rust library for advanced image manipulation and format conversion. This crate provides tools for loading image metadata, converting images, and retrieving raw pixel data.
 
+It is used under the hood at [re;file labs' image tools](https://refilelabs.com/image) to power the different image processing features.
+
 ## Installation
 
 Add this to your `Cargo.toml`:
