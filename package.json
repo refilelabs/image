@@ -11,7 +11,7 @@
     "preview": "nuxt preview .playground",
     "postinstall": "nuxt prepare .playground && bun run wasm:bundle",
     "wasm:bundle": "cd wasm && wasm-pack build --target web --release --features wasm",
-    "wasm:publish": "bun run wasm:bundle && bun run wasm/scripts/adjust-npm-pkg.ts && wasm-pack pack wasm/pkg && wasm-pack publish wasm/pkg --tag next --access public",
+    "wasm:publish": "bun run wasm:bundle && bun run wasm/scripts/adjust-npm-pkg.ts && wasm-pack pack wasm/pkg && wasm-pack publish wasm/pkg --tag latest --access public",
     "lint": "eslint ."
   },
   "devDependencies": {
