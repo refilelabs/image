@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Metadata } from '#image/wasm/pkg/image'
+import type { Metadata } from '#image/wasm/pkg/refilelabs_image'
 import type { MetadataWorkerMessage, MetadataWorkerRequest } from '#image/workers/metadata.d'
 import type { AlertProps } from '@nuxt/ui'
 import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'

@@ -1,5 +1,5 @@
 import type { MetadataWorkerMessage, MetadataWorkerRequest, MetadataWorkerResponse } from './metadata.d'
-import init, { loadMetadata } from '#image/wasm/pkg/image'
+import init, { loadMetadata } from '#image/wasm/pkg/refilelabs_image'
 
 import { WorkerMessageType } from './shared_types'
 

@@ -7,7 +7,7 @@ const currentDir = dirname(fileURLToPath(import.meta.url))
 
 export default defineNuxtConfig({
   extends: [
-   'github:refilelabs/base',
+    'github:refilelabs/base',
   ],
 
   components: [
@@ -22,5 +22,5 @@ export default defineNuxtConfig({
     $local: {
       extends: ['../base'],
     },
-  }
+  },
 })
