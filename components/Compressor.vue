@@ -4,6 +4,7 @@ import type { CompressionSettings } from './CompressionSettings.vue'
 import { acceptList } from '#image/utils/file_types'
 import init, { getPixels, type ImageData } from '#image/wasm/pkg/refilelabs_image'
 import { breakpointsTailwind } from '@vueuse/core'
+import { animate, type AnimationPlaybackControls, RowValue, useMotionValue, useTransform } from 'motion-v'
 
 export interface CompressionData {
   inputType: string
@@ -80,7 +81,10 @@ async function createBlob(canvas: HTMLCanvasElement, type: string, quality: numb
 
 const compressedCanvas = useTemplateRef('compressedCanvas')
 
-const compressedSize = ref<number>()
+const compressedSize = useMotionValue<number | undefined>(undefined)
+const formattedCompressedSize = useTransform(() => formatBytes(compressedSize.get()))
+
+let controls: AnimationPlaybackControls | undefined
 
 async function drawCompressedImage(settings: CompressionSettings) {
   if (file.value && canvas.value && compressedCanvas.value) {
@@ -91,7 +95,11 @@ async function drawCompressedImage(settings: CompressionSettings) {
 
       const blob = await createBlob(compressedCanvas.value, settings.type, settings.quality)
 
-      compressedSize.value = blob.size
+      // compressedSize.set(blob.size)
+
+      controls = animate(compressedSize, blob.size, {
+        duration: 0.25,
+      })
 
       const url = URL.createObjectURL(blob)
 
@@ -152,14 +160,6 @@ watchThrottled(compressionSettings, async (settings) => {
   throttle: 500,
 })
 
-watch(compressionSettings, () => {
-  if (file.value && canvas.value && compressedCanvas.value) {
-    compressedSize.value = undefined
-  }
-}, {
-  immediate: true,
-})
-
 async function compress() {
   const blob = await createBlob(compressedCanvas.value!, compressionSettings.type, compressionSettings.quality)
   const arrayBuffer = await blob.arrayBuffer()
@@ -174,7 +174,7 @@ async function compress() {
     metrics: {
       inputType: getFileMimeType(file.value as File),
       outputType: compressionSettings.type,
-      savings: (1 - (compressedSize.value! / (file.value?.size || 1))) * 100,
+      savings: (1 - (compressedSize.get() / (file.value?.size || 1))) * 100,
       quality: compressionSettings.quality,
     },
   })
@@ -188,6 +188,10 @@ onMounted(() => {
   if (file.value) {
     tryLoadImage(file.value)
   }
+})
+
+onUnmounted(() => {
+  controls?.stop()
 })
 </script>
 
@@ -230,7 +234,8 @@ onMounted(() => {
                 </template>
                 <template v-else>
                   <UIcon name="heroicons:check-circle" class="text-[var(--ui-success)]" />
-                  <span>{{ formatBytes(compressedSize) }}</span>
+                  <!-- <span>{{ formatBytes(compressedSize) }}</span> -->
+                  <span><RowValue :value="formattedCompressedSize" /></span>
                 </template>
               </div>
             </div>
