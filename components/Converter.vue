@@ -4,9 +4,10 @@ import type { ImageActionResult } from '#image/utils/image_action_callback'
 import type { SvgSettings } from '#image/wasm/pkg/refilelabs_image'
 // https://github.com/eliaSchenker/nuxt-webworker/blob/main/plugins/sw.ts
 import type { ConvertWorkerMessage, ConvertWorkerRequest } from '#image/workers/convert.d'
+import type { WorkerProgress } from '#image/workers/shared_types'
 import type { AlertProps } from '@nuxt/ui'
 import { acceptList, getEndingMimeType } from '#image/utils/file_types'
-import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'
+import { WorkerMessageType } from '#image/workers/shared_types'
 import ConversionWorker from '@/workers/convert.ts?worker'
 
 export interface ConversionData {

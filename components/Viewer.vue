@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import type { ImageData } from '#image/wasm/pkg/refilelabs_image'
 import { acceptList } from '#image/utils/file_types'
-import init, { getPixels, type ImageData } from '#image/wasm/pkg/refilelabs_image'
+import init, { getPixels } from '#image/wasm/pkg/refilelabs_image'
 
 export interface ViewerData {
   width: number
@@ -47,6 +48,9 @@ const tryDrawFile = async (file: File) => {
 
   const arraybuffer = await file.arrayBuffer()
   const arr = new Uint8Array(arraybuffer)
+
+  console.log(file)
+  console.log(getFileMimeType(file))
 
   const res = getPixels(arr, getFileMimeType(file))
 
@@ -109,14 +113,14 @@ onMounted(() => {
               maxHeight: `${maxHeight}px`,
             }"
           />
-          <span class="absolute top-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ file?.name }}</span>
-          <span class="absolute bottom-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ formatBytes(file?.size || 0) }}</span>
-          <div class="absolute bottom-0 right-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] grid grid-cols-2">
+          <span class="absolute top-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ file?.name }}</span>
+          <span class="absolute bottom-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ formatBytes(file?.size || 0) }}</span>
+          <div class="absolute bottom-0 right-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned) grid grid-cols-2">
             <span>Dimensions:</span> <span>{{ imageData.width }}x{{ imageData.height }}</span>
             <span>Aspect Ratio:</span> <span>{{ imageData.aspect_ratio }}</span>
             <span>Color Depth:</span> <span>{{ imageData.color_depth }} bits</span>
           </div>
-          <span class="absolute top-0 right-0 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">
+          <span class="absolute top-0 right-0 bg-(--ui-bg-accented) text-(--ui-text-toned)">
             <UButton variant="link" size="xl" color="neutral" label="Clear" icon="heroicons:trash" @click.prevent="file = undefined" />
           </span>
         </div>

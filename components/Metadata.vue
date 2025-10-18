@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Metadata } from '#image/wasm/pkg/refilelabs_image'
 import type { MetadataWorkerMessage, MetadataWorkerRequest } from '#image/workers/metadata.d'
+import type { WorkerProgress } from '#image/workers/shared_types'
 import type { AlertProps } from '@nuxt/ui'
-import { WorkerMessageType, type WorkerProgress } from '#image/workers/shared_types'
+import { WorkerMessageType } from '#image/workers/shared_types'
 import MetadataWorker from '@/workers/metadata.ts?worker'
 
 export interface MetadataExtractData {
@@ -221,7 +222,7 @@ onMounted(async () => {
       {{ progress.message }}
     </aside>
 
-    <div v-if="metadata" class="mt-6 flex-1 divide-y divide-[var(--ui-border-accented)] w-full border border-[var(--ui-border)] rounded-[calc(var(--ui-radius)*2)] overflow-hidden">
+    <div v-if="metadata" class="mt-6 flex-1 divide-y divide-(--ui-border-accented) w-full border border-(--ui-border) rounded-[calc(var(--ui-radius)*2)] overflow-hidden">
       <div class="flex items-center justify-between gap-2 px-4 py-3.5 overflow-x-auto">
         <h3 class="text-lg font-semibold">
           Metadata

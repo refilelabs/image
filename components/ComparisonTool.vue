@@ -51,11 +51,11 @@ onMounted(async () => {
       <slot />
     </div>
     <div
-      ref="draggable" class="h-full absolute bg-[var(--ui-primary)]/70 w-1 cursor-ew-resize" :style="style"
+      ref="draggable" class="h-full absolute bg-(--ui-primary)/70 w-1 cursor-ew-resize" :style="style"
     >
-      <div class="h-8 w-8 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center bg-[var(--ui-bg-accented)]">
-        <UIcon name="heroicons:chevron-double-left" class="text-[var(--ui-primary)]" />
-        <UIcon name="heroicons:chevron-double-right" class="text-[var(--ui-primary)]" />
+      <div class="h-8 w-8 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center bg-(--ui-bg-accented)">
+        <UIcon name="heroicons:chevron-double-left" class="text-(--ui-primary)" />
+        <UIcon name="heroicons:chevron-double-right" class="text-(--ui-primary)" />
       </div>
     </div>
   </div>

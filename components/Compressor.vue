@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { ImageData } from '#image/wasm/pkg/refilelabs_image'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { CompressionSettings } from './CompressionSettings.vue'
 import { acceptList } from '#image/utils/file_types'
-import init, { getPixels, type ImageData } from '#image/wasm/pkg/refilelabs_image'
+import init, { getPixels } from '#image/wasm/pkg/refilelabs_image'
 import { breakpointsTailwind } from '@vueuse/core'
 
 export interface CompressionData {
@@ -193,7 +194,7 @@ onMounted(() => {
 
 <template>
   <div class="w-full">
-    <InputsMinimal v-model="file" :hint="hint" :accept="acceptList" :minimal="!!file" class="h-screen max-h-[65vh]" :disable-input="!!file">
+    <InputsMinimal v-model="file" :hint="hint" :accept="acceptList" :minimal="!!file" class="h-screen max-h-[200px]" :disable-input="!!file">
       Choose File
       <template #file-preview>
         <div ref="container" class="w-full h-full relative">
@@ -219,17 +220,17 @@ onMounted(() => {
                   }"
                 />
               </div>
-              <span class="absolute top-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ file?.name }}</span>
-              <span class="absolute bottom-0 left-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)]">{{ formatBytes(file?.size || 0) }}</span>
+              <span class="absolute top-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ file?.name }}</span>
+              <span class="absolute bottom-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ formatBytes(file?.size || 0) }}</span>
               <div
-                class="absolute bottom-0 right-0 p-2 bg-[var(--ui-bg-accented)] text-[var(--ui-text-toned)] flex flex-row items-center space-x-2"
+                class="absolute bottom-0 right-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned) flex flex-row items-center space-x-2"
               >
                 <template v-if="compressedSize === undefined">
                   <UIcon name="heroicons:arrow-path" class="animate-spin" />
                   <span>Compressing...</span>
                 </template>
                 <template v-else>
-                  <UIcon name="heroicons:check-circle" class="text-[var(--ui-success)]" />
+                  <UIcon name="heroicons:check-circle" class="text-(--ui-success)" />
                   <span>{{ formatBytes(compressedSize) }}</span>
                 </template>
               </div>
