@@ -238,10 +238,10 @@ onMounted(() => {
           </ImageComparisonTool>
 
           <div class="absolute top-0 right-0 p-2">
-            <UButtonGroup :orientation="smallScreen ? 'vertical' : 'horizontal'">
+            <UFieldGroup :orientation="smallScreen ? 'vertical' : 'horizontal'">
               <UButton label="Remove image" color="neutral" variant="subtle" icon="heroicons:trash" @click.prevent="file = undefined" />
               <ImageCompressionSettings v-model:quality="compressionSettings.quality" v-model:type="compressionSettings.type" />
-            </UButtonGroup>
+            </UFieldGroup>
           </div>
         </div>
       </template>
