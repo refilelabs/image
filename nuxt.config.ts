@@ -5,10 +5,11 @@ import { fileURLToPath } from 'node:url'
 export const layerName = 'image'
 const currentDir = dirname(fileURLToPath(import.meta.url))
 
+// TODO: temporary workaround since c12 doesn't seem to allow overriding extends anymore
+const isLocal = process.env.npm_lifecycle_script?.replaceAll('"', '').toLowerCase().includes('--envname local')
+
 export default defineNuxtConfig({
-  extends: [
-    'github:refilelabs/base',
-  ],
+  extends: [isLocal ? '../base' : 'github:refilelabs/base'],
 
   components: [
     { path: `${currentDir}/components`, prefix: layerName },
@@ -16,11 +17,5 @@ export default defineNuxtConfig({
 
   alias: {
     '#image': `${currentDir}`,
-  },
-
-  $env: {
-    $local: {
-      extends: ['../base'],
-    },
   },
 })
