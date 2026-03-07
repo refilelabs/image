@@ -1,10 +1,7 @@
 use crate::{load::load_image, source_type::SourceType};
 
-#[cfg(feature = "wasm")] 
-use {
-    js_sys::Uint8Array,
-    wasm_bindgen::prelude::*,
-};
+#[cfg(feature = "wasm")]
+use {js_sys::Uint8Array, wasm_bindgen::prelude::*};
 
 #[cfg(not(feature = "wasm"))]
 use crate::error::WasmImageError;
@@ -31,6 +28,8 @@ pub struct ImageData {
 /// # Errors
 /// Returns an error if the image could not be loaded or rasterized.
 pub fn get_pixels(file: &Uint8Array, src_type: &str) -> Result<ImageData, JsValue> {
+    console_error_panic_hook::set_once();
+
     let src_mime_type = SourceType::from_mime_type(src_type);
 
     let file = file.to_vec();
@@ -68,8 +67,7 @@ pub fn get_pixels(file: &Uint8Array, src_type: &str) -> Result<ImageData, JsValu
 pub fn get_pixels(file: &[u8], src_type: &str) -> Result<ImageData, WasmImageError> {
     let src_mime_type = SourceType::from_mime_type(src_type);
 
-    let img = load_image(file, src_mime_type.as_ref())?
-        .rasterize(None)?;
+    let img = load_image(file, src_mime_type.as_ref())?.rasterize(None)?;
 
     let pixels = img.to_rgba8().into_vec();
 

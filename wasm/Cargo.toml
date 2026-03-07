@@ -17,9 +17,12 @@ default = []
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-image = "0.25.5"
+console_error_panic_hook = "0.1.7"
+image = { version = "0.25.5", features = ["rayon"] }
+imagepipe = { git = "https://github.com/tomvoet/imagepipe", branch = "master" }
 js-sys = { version = "0.3.73", optional = true }
 kamadak-exif = "0.6.1"
+rawloader = "0.37.1"
 resvg = { version = "0.44.0", default-features = false, features = [
   "text",
   "raster-images",

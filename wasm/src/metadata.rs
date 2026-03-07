@@ -5,19 +5,17 @@ use std::{
 
 use exif::Exif;
 use image::{codecs, GenericImageView, ImageDecoder, ImageFormat};
+use rawloader::RawImage;
 use resvg::usvg::Options;
 
 use crate::{
     error::WasmImageError,
     load::{load_raw_image, RawSourceImage},
-    source_type::SourceType,
+    source_type::{CustomRasterType, RasterType, SourceType},
 };
 
-#[cfg(feature = "wasm")] 
-use {
-    js_sys::Uint8Array,
-    wasm_bindgen::prelude::*,
-};
+#[cfg(feature = "wasm")]
+use {js_sys::Uint8Array, wasm_bindgen::prelude::*};
 
 #[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
@@ -29,15 +27,42 @@ pub struct Metadata {
     pub errors: Option<Vec<String>>,
 }
 
-fn exif_to_hashmap(exif: &Exif) -> HashMap<String, String> {
-    exif.fields()
-        .map(|field| {
-            (
+struct OtherMetadata(pub HashMap<String, String>);
+
+impl From<Exif> for OtherMetadata {
+    fn from(exif: Exif) -> Self {
+        let mut map = HashMap::new();
+        for field in exif.fields() {
+            map.insert(
                 field.tag.description().unwrap_or_default().to_string(),
                 field.value.display_as(field.tag).to_string(),
-            )
-        })
-        .collect()
+            );
+        }
+        OtherMetadata(map)
+    }
+}
+
+impl From<RawImage> for OtherMetadata {
+    fn from(raw: RawImage) -> Self {
+        let mut map = HashMap::new();
+        map.insert("Make".to_string(), raw.make);
+        map.insert("Model".to_string(), raw.model);
+        map.insert(
+            "Orientation".to_string(),
+            match raw.orientation {
+                rawloader::Orientation::Normal => "Normal".to_string(),
+                rawloader::Orientation::HorizontalFlip => "HorizontalFlip".to_string(),
+                rawloader::Orientation::Rotate180 => "Rotate180".to_string(),
+                rawloader::Orientation::VerticalFlip => "VerticalFlip".to_string(),
+                rawloader::Orientation::Transpose => "Transpose".to_string(),
+                rawloader::Orientation::Rotate90 => "Rotate90".to_string(),
+                rawloader::Orientation::Transverse => "Transverse".to_string(),
+                rawloader::Orientation::Rotate270 => "Rotate270".to_string(),
+                rawloader::Orientation::Unknown => "Unknown".to_string(),
+            },
+        );
+        OtherMetadata(map)
+    }
 }
 
 fn get_decoder<'a>(
@@ -126,7 +151,7 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
 
     fn try_from(img: RawSourceImage) -> Result<Self, Self::Error> {
         match img {
-            RawSourceImage::Raster(img, format) => {
+            RawSourceImage::Raster(img, RasterType::BuiltIn(format)) => {
                 // See https://docs.rs/image/latest/image/trait.ImageDecoder.html#implementors
                 let decoder = get_decoder(format, img).ok();
 
@@ -161,7 +186,7 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                     };
 
                     let (other, errors) = match exif {
-                        Ok(exif) => (Some(exif_to_hashmap(&exif)), None),
+                        Ok(exif) => (Some(OtherMetadata::from(exif).0), None),
                         Err(errors) => (None, Some(errors)),
                     };
 
@@ -183,6 +208,19 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                 };
 
                 Ok(metadata)
+            }
+            RawSourceImage::Raster(img, RasterType::Custom(CustomRasterType::Raw)) => {
+                let mut cursor = Cursor::new(img);
+
+                let raw_img = rawloader::decode(&mut cursor)
+                    .map_err(|e| WasmImageError::UnknownFileType(e.to_string()))?;
+
+                Ok(Self {
+                    width: raw_img.width as u32,
+                    height: raw_img.height as u32,
+                    other: Some(OtherMetadata::from(raw_img).0),
+                    ..Default::default()
+                })
             }
             RawSourceImage::Svg(svg) => {
                 let tree = resvg::usvg::Tree::from_data(svg, &Options::default()).unwrap();
