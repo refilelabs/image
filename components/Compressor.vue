@@ -194,7 +194,7 @@ onMounted(() => {
 
 <template>
   <div class="w-full">
-    <InputsMinimal v-model="file" :hint="hint" :accept="acceptList" :minimal="!!file" class="h-screen max-h-[200px]" :disable-input="!!file">
+    <InputsMinimal v-model="file" :hint="hint" :accept="acceptList" :minimal="!!file" class="h-screen min-h-[30vh] max-h-[65vh]" :disable-input="!!file">
       Choose File
       <template #file-preview>
         <div ref="container" class="w-full h-full relative">
