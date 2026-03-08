@@ -5,13 +5,11 @@ const options = [{
   label: 'Convert',
   icon: 'heroicons:arrow-path-rounded-square',
   to: '/convert',
-},
-// {
-//  label: 'Edit',
-//  icon: 'heroicons:pencil',
-//  to: '/edit',
-// },
-{
+}, {
+  label: 'Resize',
+  icon: 'heroicons:arrows-pointing-out',
+  to: '/resize',
+}, {
   label: 'Compress',
   icon: 'heroicons:arrows-pointing-in',
   to: '/compress',
