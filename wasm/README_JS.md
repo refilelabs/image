@@ -1,7 +1,7 @@
 # @refilelabs/image
 [![NPM Version](https://img.shields.io/npm/v/%40refilelabs%2Fimage)](https://www.npmjs.com/package/@refilelabs/image)
 
-A WebAssembly-powered library for advanced image manipulation and format conversion. This package provides tools for loading image metadata, converting images, and retrieving raw pixel data—all in the browser or Node.js environment.
+A WebAssembly-powered library for advanced image manipulation and format conversion. This package provides tools for loading image metadata, converting images, resizing images, and retrieving raw pixel data—all in the browser or Node.js environment.
 
 It is used under the hood at [re;file labs' image tools](https://refilelabs.com/image) to power the different image processing features.
 
@@ -16,6 +16,7 @@ npm install @refilelabs/image
 - Load image metadata
 - Retrieve raw RGBA pixel data and image properties
 - Convert images between different formats
+- Resize images to exact pixel dimensions
 - Supports custom conversion settings
 
 ## API Reference
@@ -60,6 +61,27 @@ Converts an image from one format to another.
 
 #### Returns:
 - `Uint8Array`: The converted image data.
+
+---
+
+### `resizeImage(file: Uint8Array, src_type: string, width: number, height: number, cb: Function): Uint8Array`
+
+Resizes an image to exact pixel dimensions, preserving the source format.
+
+#### Parameters:
+- `file` (`Uint8Array`): The image file to resize.
+- `src_type` (`string`): The MIME type of the source image (e.g., `image/png`, `image/jpeg`).
+- `width` (`number`): Target width in pixels.
+- `height` (`number`): Target height in pixels.
+- `cb` (`Function`): A callback function to report progress. Called with `(progress: number, message: string)`.
+
+#### Returns:
+- `Uint8Array`: The resized image data.
+
+#### Notes:
+- Uses the Lanczos3 filter for high-quality downscaling and upscaling.
+- Resizes to exact dimensions without preserving aspect ratio.
+- SVG input is rasterized before resizing and output as PNG.
 
 ---
 
@@ -108,7 +130,7 @@ Settings for conversion.
 ## Usage Example
 
 ```javascript
-import init, { loadMetadata, getPixels, convertImage } from '@refilelabs/image';
+import init, { loadMetadata, getPixels, convertImage, resizeImage } from '@refilelabs/image';
 
 await init();
 
@@ -124,6 +146,9 @@ console.log('Image Data:', imageData);
 
 const converted = convertImage(file, srcType, targetType, (progress) => console.log(`Progress: ${progress}%`));
 console.log('Converted Image:', converted);
+
+const resized = resizeImage(file, srcType, 800, 600, (progress, msg) => console.log(`${progress}% - ${msg}`));
+console.log('Resized Image:', resized);
 ```
 
 **Note:** When using the library in a Node.js environment, you need to initialize the wasm module as follows (see [issue](https://github.com/refilelabs/image/issues/6)):
