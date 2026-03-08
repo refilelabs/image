@@ -2,12 +2,12 @@
 import type { SVGData } from '#image/utils/dimensions'
 import type { ImageActionResult } from '#image/utils/image_action_callback'
 import type { SvgSettings } from '#image/wasm/pkg/refilelabs_image'
-// https://github.com/eliaSchenker/nuxt-webworker/blob/main/plugins/sw.ts
-import type { ConvertWorkerMessage, ConvertWorkerRequest } from '#image/workers/convert.d'
+import type { ConvertWorkerRequest } from '#image/workers/convert.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { AlertProps } from '@nuxt/ui'
 import { acceptList, getEndingMimeType } from '#image/utils/file_types'
-import { WorkerMessageType } from '#image/workers/shared_types'
+import { runWorker } from '#image/utils/run_worker'
+import { parseWorkerError } from '#image/workers/shared_types'
 import ConversionWorker from '@/workers/convert.ts?worker'
 
 export interface ConversionData {
@@ -139,9 +139,7 @@ async function startConversion() {
       emit('convert', { metrics: { inputType: file.value.type, outputType: outputType.value, duration: endTime - startTime }, file: outputFile })
     }
     catch (e) {
-      let error = (e as any).message || (e as any).toString()
-
-      error = error.replace(/^Error: /, '')
+      const error = parseWorkerError(e)
 
       toast.add({
         title: 'Error',
@@ -161,55 +159,24 @@ async function startConversion() {
 }
 
 function convert(arr: Uint8Array, inputType: MimeTypes, outputType: keyof typeof outputFileEndings): Promise<Uint8Array> {
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve, reject) => {
-    const params: ConvertWorkerRequest = {
-      inputFile: arr,
-      inputType,
-      outputType,
-    }
+  const params: ConvertWorkerRequest = {
+    inputFile: arr,
+    inputType,
+    outputType,
+  }
 
-    if (svgData.value && size.value) {
-      Object.assign(params, {
-        settings: {
-          type: 'svg',
-          width: size.value[0],
-          height: size.value[1],
-        } as SvgSettings,
-      })
-    }
+  if (svgData.value && size.value) {
+    Object.assign(params, {
+      settings: {
+        type: 'svg',
+        width: size.value[0],
+        height: size.value[1],
+      } as SvgSettings,
+    })
+  }
 
-    const { data, post, terminate } = useWebWorker(new ConversionWorker())
-
-    post(params)
-
-    while (true) {
-      try {
-        await until(data).changed({ timeout: 1000 })
-      }
-      catch {
-        reject(new Error('Conversion timed out'))
-      }
-
-      const res = data as Ref<ConvertWorkerMessage>
-
-      switch (res.value.type) {
-        case WorkerMessageType.DONE:
-          resolve(res.value.payload.data)
-          break
-        case WorkerMessageType.ERROR:
-          reject(res.value.payload.error)
-          break
-        case WorkerMessageType.PROGRESS:
-          progress.value = res.value.payload
-          break
-      }
-
-      if (res.value.type === WorkerMessageType.DONE || res.value.type === WorkerMessageType.ERROR) {
-        terminate()
-        break
-      }
-    }
+  return runWorker<Uint8Array>(ConversionWorker, params, (p) => {
+    progress.value = p
   })
 }
 
@@ -248,9 +215,6 @@ watch(file, () => {
       <LazyInputsSize v-model:size="size" :aspect-ratio="svgData ? svgData.aspectRatio : 2" :source-dimensions="[svgData ? svgData.width : 0, svgData ? svgData.height : 0]" />
     </UCard>
 
-    <aside v-if="progress !== undefined" class="pt-6 w-full text-center">
-      <UProgress v-model="progress.progress" />
-      {{ progress.message }}
-    </aside>
+    <ImageWorkerProgress :progress="progress" />
   </div>
 </template>

@@ -32,3 +32,16 @@ export interface WorkerRequest {
   inputFile: Uint8Array
   inputType: string
 }
+
+const errRegex = /^Error: /
+
+export function parseWorkerError(e: unknown): string {
+  let msg: string
+  if (e instanceof Error) {
+    msg = e.message
+  }
+  else {
+    msg = String(e)
+  }
+  return msg.replace(errRegex, '')
+}

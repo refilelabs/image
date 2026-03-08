@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { Metadata } from '#image/wasm/pkg/refilelabs_image'
-import type { MetadataWorkerMessage, MetadataWorkerRequest } from '#image/workers/metadata.d'
+import type { MetadataWorkerRequest } from '#image/workers/metadata.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { AlertProps } from '@nuxt/ui'
-import { WorkerMessageType } from '#image/workers/shared_types'
+import { parseWorkerError } from '#image/workers/shared_types'
+import { runWorker } from '#image/utils/run_worker'
 import MetadataWorker from '@/workers/metadata.ts?worker'
 
 export interface MetadataExtractData {
@@ -123,8 +124,7 @@ async function startExtraction() {
       })
     }
     catch (e) {
-      let error = (e as any).message || (e as any).toString()
-      error = error.replace(/^Error: /, '')
+      const error = parseWorkerError(e)
 
       toast.add({
         title: 'Error',
@@ -143,45 +143,8 @@ async function startExtraction() {
 }
 
 function extractMetadata(arr: Uint8Array, inputType: MimeTypes): Promise<Metadata> {
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve, reject) => {
-    const params: MetadataWorkerRequest = {
-      inputFile: arr,
-      inputType,
-    }
-
-    const { data, post, terminate } = useWebWorker(new MetadataWorker())
-
-    post(params)
-
-    while (true) {
-      try {
-        await until(data).changed({ timeout: 1000 })
-      }
-      catch {
-        reject(new Error('Metadata extraction timed out'))
-      }
-
-      const res = data as Ref<MetadataWorkerMessage>
-
-      switch (res.value.type) {
-        case WorkerMessageType.DONE:
-          resolve(res.value.payload.data)
-          break
-        case WorkerMessageType.ERROR:
-          reject(res.value.payload.error)
-          break
-        case WorkerMessageType.PROGRESS:
-          progress.value = res.value.payload
-          break
-      }
-
-      if (res.value.type === WorkerMessageType.DONE || res.value.type === WorkerMessageType.ERROR) {
-        terminate()
-        break
-      }
-    }
-  })
+  const params: MetadataWorkerRequest = { inputFile: arr, inputType }
+  return runWorker<Metadata>(MetadataWorker, params, (p) => { progress.value = p })
 }
 
 watch(file, (newFile, oldFile) => {
@@ -217,10 +180,7 @@ onMounted(async () => {
       class="mt-6" @close="warning = undefined"
     />
 
-    <aside v-if="progress !== undefined" class="pt-6 w-full text-center">
-      <UProgress v-model="progress.progress" />
-      {{ progress.message }}
-    </aside>
+    <ImageWorkerProgress :progress="progress" />
 
     <div v-if="metadata" class="mt-6 flex-1 divide-y divide-(--ui-border-accented) w-full border border-(--ui-border) rounded-[calc(var(--ui-radius)*2)] overflow-hidden">
       <div class="flex items-center justify-between gap-2 px-4 py-3.5 overflow-x-auto">
