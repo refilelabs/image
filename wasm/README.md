@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/refilelabs-image.svg)](https://crates.io/crates/refilelabs-image)
 [![Documentation](https://docs.rs/refilelabs-image/badge.svg)](https://docs.rs/refilelabs-image)
 
-A Rust library for advanced image manipulation and format conversion. This crate provides tools for loading image metadata, converting images, and retrieving raw pixel data.
+A Rust library for advanced image manipulation and format conversion. This crate provides tools for loading image metadata, converting images, resizing images, and retrieving raw pixel data.
 
 It is used under the hood at [re;file labs' image tools](https://refilelabs.com/image) to power the different image processing features.
 
@@ -21,6 +21,7 @@ refilelabs-image = "0.1.0"  # Replace with actual version
 - Load image metadata
 - Retrieve raw RGBA pixel data and image properties
 - Convert images between different formats
+- Resize images to exact pixel dimensions
 - Supports custom conversion settings
 
 ## Important Note
@@ -74,6 +75,26 @@ Converts an image file to raw RGBA pixel data.
 
 ---
 
+### `resize_image(file: &[u8], src_type: &str, width: u32, height: u32) -> Result<Vec<u8>, WasmImageError>`
+
+Resizes an image to exact pixel dimensions, preserving the source format.
+
+#### Parameters:
+- `file` (`&[u8]`): The image file to resize
+- `src_type` (`&str`): The MIME type of the source image (e.g., `"image/png"`)
+- `width` (`u32`): Target width in pixels
+- `height` (`u32`): Target height in pixels
+
+#### Returns:
+- `Result<Vec<u8>, WasmImageError>`: The resized image data or an error
+
+#### Notes:
+- Uses the Lanczos3 filter for high-quality downscaling and upscaling
+- Resizes to exact dimensions without preserving aspect ratio
+- SVG input is rasterized before resizing and output as PNG
+
+---
+
 ## Data Structures
 
 ### `Metadata`
@@ -109,7 +130,7 @@ Settings for conversion.
 ## Usage Example
 
 ```rust
-use refilelabs_image::{convert_image, get_pixels, load_metadata, Settings};
+use refilelabs_image::{convert_image, get_pixels, load_metadata, resize_image, Settings};
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -129,7 +150,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Convert image
     let converted = convert_image(&file, src_type, target_type, &None)?;
     fs::write("output.webp", converted)?;
-    
+
+    // Resize image to 800x600
+    let resized = resize_image(&file, src_type, 800, 600)?;
+    fs::write("output_resized.png", resized)?;
+
     Ok(())
 }
 ```
