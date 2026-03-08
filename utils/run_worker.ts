@@ -1,9 +1,9 @@
 import type { WorkerMessage, WorkerProgress, WorkerResponse } from '#image/workers/shared_types'
 import { WorkerMessageType } from '#image/workers/shared_types'
 
-export async function runWorker<TData>(
+export async function runWorker<TRequest, TData>(
   WorkerCtor: new () => Worker,
-  params: object,
+  params: TRequest,
   onProgress?: (p: WorkerProgress) => void,
   timeout = 10_000,
   timeoutMessage = 'Timed out',
