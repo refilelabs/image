@@ -117,7 +117,7 @@ async function download() {
 
     const ext = outputFileEndings[outputType.value]
     const name = removeFileExtension(file.value.name)
-    const outputFile = new File([result], `${name}-${targetWidth}x${targetHeight}.${ext}`, { type: outputType.value })
+    const outputFile = new File([result as Uint8Array<ArrayBuffer>], `${name}-${targetWidth}x${targetHeight}.${ext}`, { type: outputType.value })
 
     emit('resize', {
       file: outputFile,

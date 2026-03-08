@@ -132,7 +132,7 @@ async function startConversion() {
       const result = await convert(arr, getFileMimeType(file.value), outputType.value as keyof typeof outputFileEndings)
 
       const endTime = performance.now()
-      const blob = new Blob([result], { type: outputType.value })
+      const blob = new Blob([result as Uint8Array<ArrayBuffer>], { type: outputType.value })
       const fileName = removeFileExtension(file.value.name)
       const outputFile = new File([blob], `converted-${fileName}.${outputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
 
