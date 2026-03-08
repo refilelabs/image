@@ -6,17 +6,28 @@ export async function runWorker<TData>(
   params: object,
   onProgress?: (p: WorkerProgress) => void,
   timeout = 10_000,
+  timeoutMessage = 'Timed out',
 ): Promise<TData> {
   return new Promise((resolve, reject) => {
     const worker = new WorkerCtor()
-    const timer = setTimeout(() => {
-      worker.terminate()
-      reject(new Error('Timed out'))
-    }, timeout)
+    let timer: ReturnType<typeof setTimeout>
+
+    const scheduleTimeout = () => {
+      if (timer) {
+        clearTimeout(timer)
+      }
+      timer = setTimeout(() => {
+        worker.terminate()
+        reject(new Error(timeoutMessage))
+      }, timeout)
+    }
+
+    scheduleTimeout()
 
     worker.onmessage = (e: MessageEvent<WorkerMessage<WorkerResponse<TData>>>) => {
       const { type, payload } = e.data
       if (type === WorkerMessageType.PROGRESS) {
+        scheduleTimeout()
         onProgress?.(payload)
       }
       else if (type === WorkerMessageType.DONE) {
