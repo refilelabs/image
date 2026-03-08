@@ -136,6 +136,8 @@ async function startConversion() {
       const fileName = removeFileExtension(file.value.name)
       const outputFile = new File([blob], `converted-${fileName}.${outputFileEndings[outputType.value as keyof typeof outputFileEndings]}`)
 
+      console.log('Conversion finished in', endTime - startTime, 'ms')
+
       emit('convert', { metrics: { inputType: file.value.type, outputType: outputType.value, duration: endTime - startTime }, file: outputFile })
     }
     catch (e) {
@@ -227,7 +229,11 @@ watch(file, () => {
     <div class="flex flex-row items-end space-x-10 pt-3">
       <div class="grow">
         <UFormField label="Output Type">
-          <USelect v-model="outputType" :items="Object.entries(outputFileEndings).map(([ending, imageType]) => ({ value: ending, label: imageType }))" value-key="value" label-key="label" />
+          <USelect
+            v-model="outputType"
+            :items="Object.entries(outputFileEndings).map(([ending, imageType]) => ({ value: ending, label: imageType }))"
+            value-key="value" label-key="label"
+          />
         </UFormField>
       </div>
       <UButton class="cursor-pointer" @click="startConversion">
@@ -245,7 +251,10 @@ watch(file, () => {
       <template #header>
         Svg Settings
       </template>
-      <LazyInputsSize v-model:size="size" :aspect-ratio="svgData ? svgData.aspectRatio : 2" :source-dimensions="[svgData ? svgData.width : 0, svgData ? svgData.height : 0]" />
+      <LazyInputsSize
+        v-model:size="size" :aspect-ratio="svgData ? svgData.aspectRatio : 2"
+        :source-dimensions="[svgData ? svgData.width : 0, svgData ? svgData.height : 0]"
+      />
     </UCard>
 
     <aside v-if="progress !== undefined" class="pt-6 w-full text-center">
