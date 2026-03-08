@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { ResizeWorkerMessage, ResizeWorkerRequest } from '#image/workers/resize.d'
+import type { ResizeWorkerRequest } from '#image/workers/resize.d'
+import type { WorkerProgress } from '#image/workers/shared_types'
 import { acceptList } from '#image/utils/file_types'
+import { runWorker } from '#image/utils/run_worker'
 import init, { getPixels } from '#image/wasm/pkg/refilelabs_image'
-import { WorkerMessageType } from '#image/workers/shared_types'
+import { parseWorkerError } from '#image/workers/shared_types'
 import ResizeWorker from '@/workers/resize.ts?worker'
 
 export interface ResizeData {
@@ -32,7 +34,7 @@ const file = ref<File | undefined>(props.initFile)
 
 const originalSize = ref<[number, number]>([0, 0])
 const size = ref<[number, number]>([0, 0])
-const progress = ref<{ progress: number, message: string } | undefined>()
+const progress = ref<WorkerProgress>()
 
 const aspectRatio = computed(() =>
   originalSize.value[1] > 0 ? originalSize.value[0] / originalSize.value[1] : 1,
@@ -95,48 +97,9 @@ watch(file, async (f) => {
 })
 
 function doResize(arr: Uint8Array, inputType: MimeTypes, width: number, height: number): Promise<Uint8Array> {
-  // eslint-disable-next-line no-async-promise-executor
-  return new Promise(async (resolve, reject) => {
-    const params: ResizeWorkerRequest = {
-      inputFile: arr,
-      inputType,
-      width,
-      height,
-    }
-
-    const { data, post, terminate } = useWebWorker(new ResizeWorker())
-
-    post(params)
-
-    while (true) {
-      try {
-        await until(data).changed({ timeout: 10000 })
-      }
-      catch {
-        reject(new Error('Resize timed out'))
-        terminate()
-        break
-      }
-
-      const res = data as Ref<ResizeWorkerMessage>
-
-      switch (res.value.type) {
-        case WorkerMessageType.DONE:
-          resolve(res.value.payload.data)
-          break
-        case WorkerMessageType.ERROR:
-          reject(new Error(res.value.payload.error))
-          break
-        case WorkerMessageType.PROGRESS:
-          progress.value = res.value.payload
-          break
-      }
-
-      if (res.value.type === WorkerMessageType.DONE || res.value.type === WorkerMessageType.ERROR) {
-        terminate()
-        break
-      }
-    }
+  const params: ResizeWorkerRequest = { inputFile: arr, inputType, width, height }
+  return runWorker<Uint8Array>(ResizeWorker, params, (p) => {
+    progress.value = p
   })
 }
 
@@ -154,7 +117,7 @@ async function download() {
 
     const ext = outputFileEndings[outputType.value]
     const name = removeFileExtension(file.value.name)
-    const outputFile = new File([result], `${name}-${targetWidth}x${targetHeight}.${ext}`, { type: outputType.value })
+    const outputFile = new File([result as Uint8Array<ArrayBuffer>], `${name}-${targetWidth}x${targetHeight}.${ext}`, { type: outputType.value })
 
     emit('resize', {
       file: outputFile,
@@ -168,8 +131,7 @@ async function download() {
     })
   }
   catch (e) {
-    let error = (e as any).message || (e as any).toString()
-    error = error.replace(/^Error: /, '')
+    const error = parseWorkerError(e)
     toast.add({
       title: 'Error',
       icon: 'i-heroicons-exclamation-circle',
@@ -241,9 +203,6 @@ onMounted(() => {
       </UButton>
     </div>
 
-    <aside v-if="progress !== undefined" class="pt-6 w-full text-center">
-      <UProgress v-model="progress.progress" />
-      {{ progress.message }}
-    </aside>
+    <ImageWorkerProgress :progress="progress" />
   </div>
 </template>
