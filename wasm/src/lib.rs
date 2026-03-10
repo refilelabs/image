@@ -21,3 +21,6 @@ pub use {
     resize::resize_image,
     view::get_pixels,
 };
+
+#[cfg(feature = "wasm")]
+pub use metadata::save_metadata;
