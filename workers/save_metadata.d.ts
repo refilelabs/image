@@ -6,5 +6,6 @@ export type SaveMetadataWorkerMessage = WorkerMessage<SaveMetadataWorkerResponse
 
 export interface SaveMetadataWorkerRequest extends WorkerRequest {
   changes: MetadataChanges
+  stripAll?: boolean
   stripGps?: boolean
 }

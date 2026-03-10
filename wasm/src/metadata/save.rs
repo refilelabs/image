@@ -113,6 +113,7 @@ pub fn save_metadata(
     file: &Uint8Array,
     src_type: &str,
     changes: MetadataChanges,
+    strip_all: bool,
     strip_gps: bool,
     cb: &js_sys::Function,
 ) -> Result<Uint8Array, JsValue> {
@@ -136,7 +137,12 @@ pub fn save_metadata(
     let mut output = encode_image_to_vec(&img, format)
         .map_err(|e| JsValue::from_str(&e.to_string()))?;
 
-    if !changes.0.is_empty() || strip_gps {
+    // strip_all: re-encode only — the image crate does not preserve EXIF, so
+    // re-encoding is sufficient. No EXIF write-back needed.
+    //
+    // !strip_all: always load and write EXIF back so existing metadata is
+    // preserved when there are no changes (e.g. save clicked with no edits).
+    if !strip_all {
         let _ = cb.call2(&this, &JsValue::from_f64(80.0), &JsValue::from_str("Applying metadata changes"));
 
         let mut exif_meta = LittleExifMetadata::new_from_vec(&file_bytes, file_ext.clone())

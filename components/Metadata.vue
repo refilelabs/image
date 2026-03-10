@@ -211,6 +211,7 @@ async function saveEdited() {
       inputType: mimeType,
       changes,
       stripGps: stripGps.value || undefined,
+      stripAll: false,
     }
     const result = await runWorker<SaveMetadataWorkerRequest, Uint8Array>(
       SaveMetadataWorker,
@@ -252,7 +253,7 @@ async function stripMetadata() {
     const arr = new Uint8Array(arraybuffer)
     const mimeType = getFileMimeType(file.value)
 
-    const params: SaveMetadataWorkerRequest = { inputFile: arr, inputType: mimeType, changes: [] }
+    const params: SaveMetadataWorkerRequest = { inputFile: arr, inputType: mimeType, changes: [], stripAll: true }
     const result = await runWorker<SaveMetadataWorkerRequest, Uint8Array>(
       SaveMetadataWorker,
       params,
