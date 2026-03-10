@@ -75,9 +75,9 @@ fn resolve_preset(tags: &[exif::Tag]) -> Vec<String> {
 pub(super) fn build_metadata_presets() -> MetadataPresets {
     MetadataPresets {
         timestamps: resolve_preset(PRESET_TIMESTAMPS),
-        device:     resolve_preset(PRESET_DEVICE),
-        author:     resolve_preset(PRESET_AUTHOR),
-        gps:        resolve_preset(PRESET_GPS),
+        device: resolve_preset(PRESET_DEVICE),
+        author: resolve_preset(PRESET_AUTHOR),
+        gps: resolve_preset(PRESET_GPS),
     }
 }
 
@@ -105,10 +105,26 @@ mod tests {
         }
         // No tag should be silently dropped by filter_map.
         let presets = build_metadata_presets();
-        assert_eq!(presets.timestamps.len(), PRESET_TIMESTAMPS.len(), "timestamps: some tags lost their description");
-        assert_eq!(presets.device.len(),     PRESET_DEVICE.len(),     "device: some tags lost their description");
-        assert_eq!(presets.author.len(),     PRESET_AUTHOR.len(),     "author: some tags lost their description");
-        assert_eq!(presets.gps.len(),        PRESET_GPS.len(),        "gps: some tags lost their description");
+        assert_eq!(
+            presets.timestamps.len(),
+            PRESET_TIMESTAMPS.len(),
+            "timestamps: some tags lost their description"
+        );
+        assert_eq!(
+            presets.device.len(),
+            PRESET_DEVICE.len(),
+            "device: some tags lost their description"
+        );
+        assert_eq!(
+            presets.author.len(),
+            PRESET_AUTHOR.len(),
+            "author: some tags lost their description"
+        );
+        assert_eq!(
+            presets.gps.len(),
+            PRESET_GPS.len(),
+            "gps: some tags lost their description"
+        );
     }
 
     #[test]
@@ -117,15 +133,25 @@ mod tests {
             EDITABLE_TAGS.iter().map(|e| e.tag).collect();
 
         // Non-GPS preset tags must all be in EDITABLE_TAGS.
-        for (name, tags) in [("timestamps", PRESET_TIMESTAMPS), ("device", PRESET_DEVICE), ("author", PRESET_AUTHOR)] {
+        for (name, tags) in [
+            ("timestamps", PRESET_TIMESTAMPS),
+            ("device", PRESET_DEVICE),
+            ("author", PRESET_AUTHOR),
+        ] {
             for tag in tags {
-                assert!(editable_set.contains(tag), "{tag:?} is in the '{name}' preset but not in EDITABLE_TAGS");
+                assert!(
+                    editable_set.contains(tag),
+                    "{tag:?} is in the '{name}' preset but not in EDITABLE_TAGS"
+                );
             }
         }
 
         // GPS tags must NOT be in EDITABLE_TAGS (stripped as a unit, not individually).
         for tag in PRESET_GPS {
-            assert!(!editable_set.contains(tag), "{tag:?} is in the GPS preset but also appears in EDITABLE_TAGS");
+            assert!(
+                !editable_set.contains(tag),
+                "{tag:?} is in the GPS preset but also appears in EDITABLE_TAGS"
+            );
         }
     }
 }
