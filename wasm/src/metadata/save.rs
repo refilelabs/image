@@ -80,6 +80,7 @@ fn apply_tag_changes(exif_meta: &mut LittleExifMetadata, changes: &[MetadataChan
     }
 }
 
+/// Re-encodes the image without preserving any metadata. Used for strip_all.
 fn encode_image_to_vec(img: &image::DynamicImage, format: ImageFormat) -> Result<Vec<u8>, WasmImageError> {
     let mut output: Vec<u8> = Vec::new();
     match format {
@@ -99,6 +100,41 @@ fn encode_image_to_vec(img: &image::DynamicImage, format: ImageFormat) -> Result
             output = cursor.into_inner();
         }
         _ => {
+            img.write_to(&mut Cursor::new(&mut output), format)
+                .map_err(WasmImageError::LibError)?;
+        }
+    }
+    Ok(output)
+}
+
+/// Re-encodes the image and embeds EXIF via ImageEncoder::set_exif_metadata.
+/// `exif` must be raw TIFF-structured bytes (the output of LittleExifMetadata::encode()).
+/// The encoder is responsible for wrapping them in the format-specific container
+/// (APP1 for JPEG, eXIf chunk for PNG, EXIF chunk for WebP).
+/// PNG and WebP are supported. TIFF falls back to re-encode without EXIF.
+fn encode_image_with_exif_to_vec(
+    img: &image::DynamicImage,
+    format: ImageFormat,
+    exif: Vec<u8>,
+) -> Result<Vec<u8>, WasmImageError> {
+    let mut output: Vec<u8> = Vec::new();
+    match format {
+        ImageFormat::Png => {
+            let mut encoder = codecs::png::PngEncoder::new(&mut output);
+            let _ = encoder.set_exif_metadata(exif);
+            encoder.write_image(img.as_bytes(), img.width(), img.height(), img.color().into())
+                .map_err(WasmImageError::LibError)?;
+        }
+        ImageFormat::WebP => {
+            let mut encoder = codecs::webp::WebPEncoder::new_lossless(&mut output);
+            let _ = encoder.set_exif_metadata(exif);
+            encoder.write_image(img.as_bytes(), img.width(), img.height(), img.color().into())
+                .map_err(WasmImageError::LibError)?;
+        }
+        _ => {
+            // TIFF: set_exif_metadata is unsupported (returns UnsupportedError).
+            // Re-encode without EXIF. The frontend restricts editing to formats
+            // that support set_exif_metadata, so this is a defensive fallback.
             img.write_to(&mut Cursor::new(&mut output), format)
                 .map_err(WasmImageError::LibError)?;
         }
@@ -127,35 +163,50 @@ pub fn save_metadata(
     let _ = cb.call2(&this, &JsValue::from_f64(10.0), &JsValue::from_str("Starting metadata save"));
 
     let file_bytes = file.to_vec();
-    let _ = cb.call2(&this, &JsValue::from_f64(30.0), &JsValue::from_str("Loading image"));
 
-    let img = image::load_from_memory_with_format(&file_bytes, format)
-        .map_err(|e| JsValue::from_str(&e.to_string()))?;
-
-    let _ = cb.call2(&this, &JsValue::from_f64(55.0), &JsValue::from_str("Encoding image"));
-
-    let mut output = encode_image_to_vec(&img, format)
-        .map_err(|e| JsValue::from_str(&e.to_string()))?;
-
-    // strip_all: re-encode only — the image crate does not preserve EXIF, so
-    // re-encoding is sufficient. No EXIF write-back needed.
-    //
-    // !strip_all: always load and write EXIF back so existing metadata is
-    // preserved when there are no changes (e.g. save clicked with no edits).
-    if !strip_all {
-        let _ = cb.call2(&this, &JsValue::from_f64(80.0), &JsValue::from_str("Applying metadata changes"));
-
+    let output = if strip_all {
+        // Re-encode to strip all metadata. The image crate never preserves EXIF
+        // when encoding, and re-encoding also clears XMP, IPTC, and other
+        // non-EXIF segments embedded in APP markers.
+        let _ = cb.call2(&this, &JsValue::from_f64(30.0), &JsValue::from_str("Loading image"));
+        let img = image::load_from_memory_with_format(&file_bytes, format)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let _ = cb.call2(&this, &JsValue::from_f64(70.0), &JsValue::from_str("Encoding image"));
+        encode_image_to_vec(&img, format)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?
+    } else if format == ImageFormat::Jpeg {
+        // JPEG metadata edit: write EXIF directly into a copy of the original
+        // bytes. little_exif's write_to_vec supports JPEG, and skipping
+        // re-encode preserves the original quantization tables exactly.
+        let _ = cb.call2(&this, &JsValue::from_f64(40.0), &JsValue::from_str("Applying metadata changes"));
+        let mut output = file_bytes.clone();
         let mut exif_meta = LittleExifMetadata::new_from_vec(&file_bytes, file_ext.clone())
             .unwrap_or_else(|_| LittleExifMetadata::new());
-
         apply_tag_changes(&mut exif_meta, &changes.0);
         if strip_gps {
             strip_gps_tags(&mut exif_meta);
         }
-
         exif_meta.write_to_vec(&mut output, file_ext)
             .map_err(|e| JsValue::from_str(&e.to_string()))?;
-    }
+        output
+    } else {
+        // Non-JPEG metadata edit: re-encode and embed EXIF via set_exif_metadata.
+        // PNG and WebP both implement this. TIFF falls back to re-encode only.
+        let _ = cb.call2(&this, &JsValue::from_f64(30.0), &JsValue::from_str("Loading image"));
+        let img = image::load_from_memory_with_format(&file_bytes, format)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let _ = cb.call2(&this, &JsValue::from_f64(55.0), &JsValue::from_str("Applying metadata changes"));
+        let mut exif_meta = LittleExifMetadata::new_from_vec(&file_bytes, file_ext)
+            .unwrap_or_else(|_| LittleExifMetadata::new());
+        apply_tag_changes(&mut exif_meta, &changes.0);
+        if strip_gps {
+            strip_gps_tags(&mut exif_meta);
+        }
+        let exif_bytes = exif_meta.encode().unwrap_or_default();
+        let _ = cb.call2(&this, &JsValue::from_f64(80.0), &JsValue::from_str("Encoding image"));
+        encode_image_with_exif_to_vec(&img, format, exif_bytes)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?
+    };
 
     let _ = cb.call2(&this, &JsValue::from_f64(100.0), &JsValue::from_str("Metadata save complete"));
 

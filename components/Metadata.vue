@@ -76,8 +76,16 @@ const progress = ref<WorkerProgress>()
 const editableFieldsSet = shallowRef<Set<string>>(new Set())
 const deletableFieldsSet = shallowRef<Set<string>>(new Set())
 
+// Strip all works for every supported format via re-encode.
 const canEditMetadata = computed(() =>
   !!file.value && new Set(['image/jpeg', 'image/png', 'image/webp', 'image/tiff']).has(getFileMimeType(file.value)))
+
+// Partial field editing requires a format whose encoder supports set_exif_metadata.
+// JPEG uses little_exif write_to_vec (direct byte patch, no re-encode).
+// PNG and WebP use ImageEncoder::set_exif_metadata (re-encode + EXIF embed).
+// TIFF: set_exif_metadata returns UnsupportedError — editing is not available.
+const canEditFields = computed(() =>
+  !!file.value && new Set(['image/jpeg', 'image/png', 'image/webp']).has(getFileMimeType(file.value)))
 
 const presets = ref<MetadataPresets>()
 
@@ -118,6 +126,8 @@ function originalValue(property: string): string {
 }
 
 function enterEditMode() {
+  if (!canEditFields.value)
+    return
   edits.value = {}
   deletions.value = new Set()
   for (const { property, value } of tabularMetadata.value) {
@@ -378,17 +388,18 @@ onMounted(async () => {
               />
             </template>
           </UInput>
-          <UButton
-            v-if="!editMode && canEditMetadata"
-            color="neutral"
-            variant="outline"
-            size="sm"
-            icon="heroicons:pencil"
-            :disabled="saving"
-            @click="enterEditMode"
-          >
-            Edit
-          </UButton>
+          <UTooltip v-if="!editMode && canEditMetadata" :text="canEditFields ? undefined : 'EXIF editing is not supported for this format'">
+            <UButton
+              color="neutral"
+              variant="outline"
+              size="sm"
+              icon="heroicons:pencil"
+              :disabled="saving || !canEditFields"
+              @click="enterEditMode"
+            >
+              Edit
+            </UButton>
+          </UTooltip>
           <UButton
             v-if="editMode"
             color="primary"
