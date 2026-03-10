@@ -13,11 +13,8 @@ use crate::{
     source_type::SourceType,
 };
 
-#[cfg(feature = "wasm")] 
-use {
-    js_sys::Uint8Array,
-    wasm_bindgen::prelude::*,
-};
+#[cfg(feature = "wasm")]
+use {wasm_bindgen::prelude::*, js_sys::Uint8Array};
 
 #[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
@@ -26,24 +23,28 @@ pub struct Metadata {
     pub width: u32,
     pub height: u32,
     pub other: Option<HashMap<String, String>>,
+    pub gps: Option<HashMap<String, String>>,
     pub errors: Option<Vec<String>>,
 }
 
-fn exif_to_hashmap(exif: &Exif) -> HashMap<String, String> {
-    exif.fields()
-        .map(|field| {
-            (
-                field.tag.description().unwrap_or_default().to_string(),
-                field.value.display_as(field.tag).to_string(),
-            )
-        })
-        .collect()
+pub(super) fn exif_to_hashmaps(exif: &Exif) -> (HashMap<String, String>, Option<HashMap<String, String>>) {
+    let mut other = HashMap::new();
+    let mut gps = HashMap::new();
+
+    for field in exif.fields() {
+        let key = field.tag.description().unwrap_or_default().to_string();
+        let value = field.value.display_as(field.tag).to_string();
+        if field.tag.0 == exif::Context::Gps {
+            gps.insert(key, value);
+        } else {
+            other.insert(key, value);
+        }
+    }
+
+    (other, if gps.is_empty() { None } else { Some(gps) })
 }
 
-fn get_decoder<'a>(
-    format: ImageFormat,
-    img: &'a [u8],
-) -> Result<Box<dyn ImageDecoder + 'a>, WasmImageError> {
+fn get_decoder<'a>(format: ImageFormat, img: &'a [u8]) -> Result<Box<dyn ImageDecoder + 'a>, WasmImageError> {
     let decoder: Box<dyn ImageDecoder> = match format {
         ImageFormat::Bmp => Box::new(
             codecs::bmp::BmpDecoder::new(Cursor::new(img))
@@ -127,7 +128,6 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
     fn try_from(img: RawSourceImage) -> Result<Self, Self::Error> {
         match img {
             RawSourceImage::Raster(img, format) => {
-                // See https://docs.rs/image/latest/image/trait.ImageDecoder.html#implementors
                 let decoder = get_decoder(format, img).ok();
 
                 let metadata = if let Some(mut decoder) = decoder {
@@ -160,26 +160,20 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                         }
                     };
 
-                    let (other, errors) = match exif {
-                        Ok(exif) => (Some(exif_to_hashmap(&exif)), None),
-                        Err(errors) => (None, Some(errors)),
+                    let (other, gps, errors) = match exif {
+                        Ok(exif) => {
+                            let (other, gps) = exif_to_hashmaps(&exif);
+                            (Some(other), gps, None)
+                        }
+                        Err(errors) => (None, None, Some(errors)),
                     };
 
-                    Self {
-                        width,
-                        height,
-                        other,
-                        errors,
-                    }
+                    Self { width, height, other, gps, errors }
                 } else {
                     let img = image::load_from_memory_with_format(img, format)
                         .map_err(WasmImageError::LibError)?;
                     let (width, height) = img.dimensions();
-                    Self {
-                        width,
-                        height,
-                        ..Default::default()
-                    }
+                    Self { width, height, ..Default::default() }
                 };
 
                 Ok(metadata)
@@ -188,11 +182,7 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                 let tree = resvg::usvg::Tree::from_data(svg, &Options::default()).unwrap();
                 let size = tree.size();
                 let (width, height) = (size.width() as u32, size.height() as u32);
-                Ok(Self {
-                    width,
-                    height,
-                    ..Default::default()
-                })
+                Ok(Self { width, height, ..Default::default() })
             }
         }
     }
@@ -200,83 +190,47 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
 
 #[cfg(feature = "wasm")]
 #[wasm_bindgen(js_name = loadMetadata)]
-/// Loads the metadata of an image file.
-/// # Arguments
-/// * `file` - The image file to convert.
-/// * `src_type` - The MIME type of the source image.
-/// * `cb` - A callback function to report progress.
-/// # Returns
-/// The metadata of the image.
-/// # Errors
-/// Returns an error if the metadata could not be loaded.
 pub fn load_metadata(
     file: &Uint8Array,
     src_type: &str,
     cb: &js_sys::Function,
 ) -> Result<Metadata, JsValue> {
     let src_type = SourceType::from_mime_type(src_type);
-
     let this = JsValue::NULL;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(10.0),
-        &JsValue::from_str("Starting metadata extraction"),
-    );
-
+    let _ = cb.call2(&this, &JsValue::from_f64(10.0), &JsValue::from_str("Starting metadata extraction"));
     let file = file.to_vec();
-
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(35.0),
-        &JsValue::from_str("Loading image"),
-    );
+    let _ = cb.call2(&this, &JsValue::from_f64(35.0), &JsValue::from_str("Loading image"));
 
     let img = load_raw_image(&file, src_type.as_ref())
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(65.0),
-        &JsValue::from_str("Extracting metadata"),
-    );
+    let _ = cb.call2(&this, &JsValue::from_f64(65.0), &JsValue::from_str("Extracting metadata"));
 
-    let metadata =
-        Metadata::try_from(img).map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
+    let metadata = Metadata::try_from(img)
+        .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(100.0),
-        &JsValue::from_str("Metadata extraction complete"),
-    );
+    let _ = cb.call2(&this, &JsValue::from_f64(100.0), &JsValue::from_str("Metadata extraction complete"));
 
     Ok(metadata)
 }
 
 #[cfg(not(feature = "wasm"))]
-/// Loads the metadata of an image file.
-/// # Arguments
-/// * `file` - The image file to convert.
-/// * `src_type` - The MIME type of the source image.
-/// # Returns
-/// The metadata of the image.
-/// # Errors
-/// Returns an error if the metadata could not be loaded.
 pub fn load_metadata(file: &[u8], src_type: &str) -> Result<Metadata, WasmImageError> {
     let src_type = SourceType::from_mime_type(src_type);
-
     let img = load_raw_image(file, src_type.as_ref())?;
-
     Metadata::try_from(img)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::collections::HashMap;
+    use std::io::{BufReader, Cursor};
+    use image::{codecs, ImageDecoder};
 
     #[test]
     fn test_load_metadata() {
-        let file = include_bytes!("../assets/test.jpeg");
+        let file = include_bytes!("../../assets/test.jpeg");
         let mut decoder =
             codecs::jpeg::JpegDecoder::new(Cursor::new(file)).expect("Failed to create decoder");
 
@@ -286,13 +240,10 @@ mod tests {
             .expect("No EXIF data found");
 
         let reader = exif::Reader::new();
-
         let exif = reader.read_raw(exif).expect("Failed to read EXIF data");
 
         let mut hashmap = HashMap::new();
-
         for field in exif.fields() {
-            //println!("{:?}", field);
             let field_name = field.tag.description();
             let field_value = field.value.display_as(field.tag);
             hashmap.insert(
@@ -305,7 +256,7 @@ mod tests {
 
     #[test]
     fn test_load_webp_metadata() {
-        let file = include_bytes!("../assets/exif.webp");
+        let file = include_bytes!("../../assets/exif.webp");
 
         let mut reader = exif::Reader::new();
         reader.continue_on_error(true);
