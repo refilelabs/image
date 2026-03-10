@@ -17,7 +17,7 @@ default = []
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
-image = "0.25.5"
+image = "0.25.9"
 js-sys = { version = "0.3.73", optional = true }
 kamadak-exif = "0.6.1"
 resvg = { version = "0.44.0", default-features = false, features = [
