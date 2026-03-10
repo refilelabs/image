@@ -48,39 +48,21 @@ pub fn resize_image(
 ) -> Result<Uint8Array, JsValue> {
     let src_mime_type = SourceType::from_mime_type(src_type);
 
-    let this = JsValue::NULL;
-
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(10.0),
-        &JsValue::from_str("Starting resize"),
-    );
+    crate::progress::report(cb, 10.0, "Starting resize");
 
     let file = file.to_vec();
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(35.0),
-        &JsValue::from_str("Loading image"),
-    );
+    crate::progress::report(cb, 35.0, "Loading image");
 
     let img = load_image(&file, src_mime_type.as_ref())
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(60.0),
-        &JsValue::from_str("Resizing image"),
-    );
+    crate::progress::report(cb, 60.0, "Resizing image");
 
     let output = resize_and_write(&img, ImageFormat::from_mime_type(src_type), width, height)
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(100.0),
-        &JsValue::from_str("Resize complete"),
-    );
+    crate::progress::report(cb, 100.0, "Resize complete");
 
     Ok(Uint8Array::from(output.as_slice()))
 }

@@ -6,11 +6,8 @@ use crate::source_type::SourceType;
 use image::ImageFormat;
 pub use settings::Settings;
 
-#[cfg(feature = "wasm")] 
-use {
-    js_sys::Uint8Array,
-    wasm_bindgen::prelude::*,
-};
+#[cfg(feature = "wasm")]
+use {js_sys::Uint8Array, wasm_bindgen::prelude::*};
 
 pub mod settings;
 pub(crate) mod svg;
@@ -80,30 +77,16 @@ pub fn convert_image(
 ) -> Result<Uint8Array, JsValue> {
     let src_mime_type = SourceType::from_mime_type(src_type);
 
-    let this = JsValue::NULL;
-
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(10.0),
-        &JsValue::from_str("Starting conversion"),
-    );
+    crate::progress::report(cb, 10.0, "Starting conversion");
 
     let file = file.to_vec();
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(35.0),
-        &JsValue::from_str("Loading image"),
-    );
+    crate::progress::report(cb, 35.0, "Loading image");
 
     let img = load_image(&file, src_mime_type.as_ref())
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(50.0),
-        &JsValue::from_str("Processing image"),
-    );
+    crate::progress::report(cb, 50.0, "Processing image");
 
     let img = process_image(
         &img,
@@ -113,20 +96,12 @@ pub fn convert_image(
     )
     .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(70.0),
-        &JsValue::from_str("Converting image"),
-    );
+    crate::progress::report(cb, 70.0, "Converting image");
 
     let output = write_image(&img, ImageFormat::from_mime_type(target_type))
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(
-        &this,
-        &JsValue::from_f64(100.0),
-        &JsValue::from_str("Conversion complete"),
-    );
+    crate::progress::report(cb, 100.0, "Conversion complete");
 
     Ok(Uint8Array::from(output.as_slice()))
 }

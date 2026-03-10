@@ -14,7 +14,7 @@ use crate::{
 };
 
 #[cfg(feature = "wasm")]
-use {wasm_bindgen::prelude::*, js_sys::Uint8Array};
+use {js_sys::Uint8Array, wasm_bindgen::prelude::*};
 
 #[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(from_wasm_abi, into_wasm_abi))]
@@ -27,7 +27,9 @@ pub struct Metadata {
     pub errors: Option<Vec<String>>,
 }
 
-pub(super) fn exif_to_hashmaps(exif: &Exif) -> (HashMap<String, String>, Option<HashMap<String, String>>) {
+pub(super) fn exif_to_hashmaps(
+    exif: &Exif,
+) -> (HashMap<String, String>, Option<HashMap<String, String>>) {
     let mut other = HashMap::new();
     let mut gps = HashMap::new();
 
@@ -44,7 +46,10 @@ pub(super) fn exif_to_hashmaps(exif: &Exif) -> (HashMap<String, String>, Option<
     (other, if gps.is_empty() { None } else { Some(gps) })
 }
 
-fn get_decoder<'a>(format: ImageFormat, img: &'a [u8]) -> Result<Box<dyn ImageDecoder + 'a>, WasmImageError> {
+fn get_decoder<'a>(
+    format: ImageFormat,
+    img: &'a [u8],
+) -> Result<Box<dyn ImageDecoder + 'a>, WasmImageError> {
     let decoder: Box<dyn ImageDecoder> = match format {
         ImageFormat::Bmp => Box::new(
             codecs::bmp::BmpDecoder::new(Cursor::new(img))
@@ -168,12 +173,22 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                         Err(errors) => (None, None, Some(errors)),
                     };
 
-                    Self { width, height, other, gps, errors }
+                    Self {
+                        width,
+                        height,
+                        other,
+                        gps,
+                        errors,
+                    }
                 } else {
                     let img = image::load_from_memory_with_format(img, format)
                         .map_err(WasmImageError::LibError)?;
                     let (width, height) = img.dimensions();
-                    Self { width, height, ..Default::default() }
+                    Self {
+                        width,
+                        height,
+                        ..Default::default()
+                    }
                 };
 
                 Ok(metadata)
@@ -182,7 +197,11 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                 let tree = resvg::usvg::Tree::from_data(svg, &Options::default()).unwrap();
                 let size = tree.size();
                 let (width, height) = (size.width() as u32, size.height() as u32);
-                Ok(Self { width, height, ..Default::default() })
+                Ok(Self {
+                    width,
+                    height,
+                    ..Default::default()
+                })
             }
         }
     }
@@ -196,21 +215,20 @@ pub fn load_metadata(
     cb: &js_sys::Function,
 ) -> Result<Metadata, JsValue> {
     let src_type = SourceType::from_mime_type(src_type);
-    let this = JsValue::NULL;
 
-    let _ = cb.call2(&this, &JsValue::from_f64(10.0), &JsValue::from_str("Starting metadata extraction"));
+    crate::progress::report(cb, 10.0, "Starting metadata extraction");
     let file = file.to_vec();
-    let _ = cb.call2(&this, &JsValue::from_f64(35.0), &JsValue::from_str("Loading image"));
+    crate::progress::report(cb, 35.0, "Loading image");
 
     let img = load_raw_image(&file, src_type.as_ref())
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(&this, &JsValue::from_f64(65.0), &JsValue::from_str("Extracting metadata"));
+    crate::progress::report(cb, 65.0, "Extracting metadata");
 
-    let metadata = Metadata::try_from(img)
-        .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
+    let metadata =
+        Metadata::try_from(img).map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
-    let _ = cb.call2(&this, &JsValue::from_f64(100.0), &JsValue::from_str("Metadata extraction complete"));
+    crate::progress::report(cb, 100.0, "Metadata extraction complete");
 
     Ok(metadata)
 }
@@ -224,9 +242,9 @@ pub fn load_metadata(file: &[u8], src_type: &str) -> Result<Metadata, WasmImageE
 
 #[cfg(test)]
 mod tests {
+    use image::{codecs, ImageDecoder};
     use std::collections::HashMap;
     use std::io::{BufReader, Cursor};
-    use image::{codecs, ImageDecoder};
 
     #[test]
     fn test_load_metadata() {
