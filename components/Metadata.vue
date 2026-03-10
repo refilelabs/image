@@ -210,7 +210,7 @@ async function saveEdited() {
     const editedFields = Object.entries(edits.value).filter(([tag, val]) => val !== originalValue(tag))
 
     const changes = [
-      ...editedFields.map(([tag, value]) => ({ tag, value: value || null })),
+      ...editedFields.map(([tag, value]) => ({ tag, value: value ?? null })),
       ...[...deletions.value]
         .filter(tag => !isGpsProperty(tag))
         .map(tag => ({ tag, value: null })),
