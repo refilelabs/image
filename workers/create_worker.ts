@@ -1,5 +1,4 @@
 import type { WorkerProgress } from './shared_types'
-import init from '#image/wasm/pkg/refilelabs_image'
 import { WorkerMessageType } from './shared_types'
 
 type ProgressCallback = (update: WorkerProgress) => void
@@ -13,11 +12,12 @@ export function createWorker<TRequest, TResult>(
 
   globalThis.addEventListener('message', (e: MessageEvent<TRequest>) => {
     callback({ progress: 0, message: 'Initializing...' })
-    init().then(() => {
+    try {
       const result = handler(e.data, callback)
       globalThis.postMessage({ type: WorkerMessageType.DONE, payload: { success: true, data: result } })
-    }).catch((err) => {
+    }
+    catch (err) {
       globalThis.postMessage({ type: WorkerMessageType.ERROR, payload: { success: false, error: String(err) } })
-    })
+    }
   }, false)
 }

@@ -3,7 +3,7 @@ import type { ResizeWorkerRequest } from '#image/workers/resize.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import { acceptList } from '#image/utils/file_types'
 import { runWorker } from '#image/utils/run_worker'
-import init, { getPixels } from '#image/wasm/pkg/refilelabs_image'
+import init, { getPixels } from '#image/wasm/pkg/bundler/refilelabs_image'
 import { parseWorkerError } from '#image/workers/shared_types'
 import ResizeWorker from '@/workers/resize.ts?worker'
 

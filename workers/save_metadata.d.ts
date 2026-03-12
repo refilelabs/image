@@ -1,4 +1,4 @@
-import type { MetadataChanges } from '#image/wasm/pkg/refilelabs_image'
+import type { MetadataChanges } from '#image/wasm/pkg/bundler/refilelabs_image'
 import type { WorkerMessage, WorkerRequest, WorkerResponse } from './shared_types'
 
 export type SaveMetadataWorkerResponse = WorkerResponse<Uint8Array>
