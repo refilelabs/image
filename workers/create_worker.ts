@@ -19,5 +19,5 @@ export function createWorker<TRequest, TResult>(
     catch (err) {
       globalThis.postMessage({ type: WorkerMessageType.ERROR, payload: { success: false, error: parseWorkerError(err) } })
     }
-  }, false)
+  })
 }
