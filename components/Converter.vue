@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { SVGData } from '#image/utils/dimensions'
 import type { ImageActionResult } from '#image/utils/image_action_callback'
-import type { SvgSettings } from '#image/wasm/pkg/refilelabs_image'
+import type { SvgSettings } from '#image/wasm/pkg/bundler/refilelabs_image'
 import type { ConvertWorkerRequest } from '#image/workers/convert.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { AlertProps } from '@nuxt/ui'

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { Metadata, MetadataPresets } from '#image/wasm/pkg/refilelabs_image'
+import type { Metadata, MetadataPresets } from '#image/wasm/pkg/bundler/refilelabs_image'
 import type { MetadataWorkerRequest } from '#image/workers/metadata.d'
 import type { SaveMetadataWorkerRequest } from '#image/workers/save_metadata.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import { runWorker } from '#image/utils/run_worker'
-import init, { deletableFields, editableFields, metadataPresets } from '#image/wasm/pkg/refilelabs_image'
+import { deletableFields, editableFields, metadataPresets } from '#image/wasm/pkg/bundler/refilelabs_image'
 import { parseWorkerError } from '#image/workers/shared_types'
 import MetadataWorker from '@/workers/metadata.ts?worker'
 import SaveMetadataWorker from '@/workers/save_metadata.ts?worker'
@@ -223,7 +223,7 @@ async function saveEdited() {
       stripGps: stripGps.value || undefined,
       stripAll: false,
     }
-    const result = await runWorker<SaveMetadataWorkerRequest, Uint8Array>(
+    const result = await runWorker<Uint8Array>(
       SaveMetadataWorker,
       params,
       (p) => { progress.value = p },
@@ -264,7 +264,7 @@ async function stripMetadata() {
     const mimeType = getFileMimeType(file.value)
 
     const params: SaveMetadataWorkerRequest = { inputFile: arr, inputType: mimeType, changes: [], stripAll: true }
-    const result = await runWorker<SaveMetadataWorkerRequest, Uint8Array>(
+    const result = await runWorker<Uint8Array>(
       SaveMetadataWorker,
       params,
       (p) => { progress.value = p },
@@ -288,7 +288,7 @@ async function stripMetadata() {
 
 function extractMetadata(arr: Uint8Array, inputType: MimeTypes): Promise<Metadata> {
   const params: MetadataWorkerRequest = { inputFile: arr, inputType }
-  return runWorker<MetadataWorkerRequest, Metadata>(MetadataWorker, params, (p) => {
+  return runWorker<Metadata>(MetadataWorker, params, (p) => {
     progress.value = p
   })
 }
@@ -345,7 +345,6 @@ watch(file, (newFile, oldFile) => {
 })
 
 onMounted(async () => {
-  await init()
   editableFieldsSet.value = new Set(editableFields())
   deletableFieldsSet.value = new Set(deletableFields())
   presets.value = metadataPresets()

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { ImageData } from '#image/wasm/pkg/refilelabs_image'
+import type { ImageData } from '#image/wasm/pkg/bundler/refilelabs_image'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { CompressionSettings } from './CompressionSettings.vue'
 import { acceptList } from '#image/utils/file_types'
-import init, { getPixels } from '#image/wasm/pkg/refilelabs_image'
+import { getPixels } from '#image/wasm/pkg/bundler/refilelabs_image'
 import { breakpointsTailwind } from '@vueuse/core'
 
 export interface CompressionData {
@@ -108,8 +108,6 @@ async function drawCompressedImage(settings: CompressionSettings) {
 }
 
 const tryLoadImage = async (file: File) => {
-  await init()
-
   const arraybuffer = await file.arrayBuffer()
   const arr = new Uint8Array(arraybuffer)
 

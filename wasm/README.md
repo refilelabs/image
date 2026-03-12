@@ -3,95 +3,76 @@
 [![Crates.io](https://img.shields.io/crates/v/refilelabs-image.svg)](https://crates.io/crates/refilelabs-image)
 [![Documentation](https://docs.rs/refilelabs-image/badge.svg)](https://docs.rs/refilelabs-image)
 
-A Rust library for advanced image manipulation and format conversion. This crate provides tools for loading image metadata, converting images, resizing images, and retrieving raw pixel data.
+A Rust library for advanced image manipulation and format conversion. Provides tools for loading image metadata, converting images, resizing images, and retrieving raw pixel data.
 
-It is used under the hood at [re;file labs' image tools](https://refilelabs.com/image) to power the different image processing features.
+Used under the hood at [re;file labs](https://refilelabs.com/image) to power all image processing features.
 
 ## Installation
 
-Add this to your `Cargo.toml`:
-
 ```toml
 [dependencies]
-refilelabs-image = "0.1.0"  # Replace with actual version
+refilelabs-image = "0.2.5"
 ```
 
 ## Features
 
-- Load image metadata
-- Retrieve raw RGBA pixel data and image properties
-- Convert images between different formats
+- Load image metadata (dimensions, EXIF, GPS)
+- Retrieve raw RGBA pixel data
+- Convert images between formats
 - Resize images to exact pixel dimensions
-- Supports custom conversion settings
+- Custom conversion settings (e.g. SVG rasterization size)
 
-## Important Note
-
-The main API functions are only available when the crate is not compiled with the 
-
-wasm
-
- feature. These functions are designed for native Rust usage.
+> **Note:** The native Rust API (`#[cfg(not(feature = "wasm"))]`) excludes `save_metadata`, which requires wasm-bindgen types. For JavaScript/WASM usage see the [npm package](https://www.npmjs.com/package/@refilelabs/image).
 
 ## API Reference
 
-### `convert_image(file: &[u8], src_type: &str, target_type: &str, convert_settings: &Option<Settings>) -> Result<Vec<u8>, WasmImageError>`
+### `convert_image`
+
+```rust
+pub fn convert_image(
+    file: &[u8],
+    src_type: &str,
+    target_type: &str,
+    convert_settings: &Option<Settings>,
+) -> Result<Vec<u8>, WasmImageError>
+```
 
 Converts an image from one format to another.
 
-#### Parameters:
-- `file` (`&[u8]`): The image file to convert
-- `src_type` (`&str`): The MIME type of the source image (e.g., `"image/png"`)
-- `target_type` (`&str`): The target MIME type (e.g., `"image/webp"`)
-- `convert_settings` (`&Option<Settings>`): Settings for the conversion
+---
 
-#### Returns:
-- `Result<Vec<u8>, WasmImageError>`: The converted image data or an error
+### `load_metadata`
+
+```rust
+pub fn load_metadata(file: &[u8], src_type: &str) -> Result<Metadata, WasmImageError>
+```
+
+Extracts dimensions and EXIF metadata from an image file.
 
 ---
 
-### `load_metadata(file: &[u8], src_type: &str) -> Result<Metadata, WasmImageError>`
+### `resize_image`
 
-Loads the metadata of an image file.
+```rust
+pub fn resize_image(
+    file: &[u8],
+    src_type: &str,
+    width: u32,
+    height: u32,
+) -> Result<Vec<u8>, WasmImageError>
+```
 
-#### Parameters:
-- `file` (`&[u8]`): The image file to analyze
-- `src_type` (`&str`): The MIME type of the source image
-
-#### Returns:
-- `Result<Metadata, WasmImageError>`: An object containing image metadata or an error
-
----
-
-### `get_pixels(file: &[u8], src_type: &str) -> Result<ImageData, WasmImageError>`
-
-Converts an image file to raw RGBA pixel data.
-
-#### Parameters:
-- `file` (`&[u8]`): The image file to convert
-- `src_type` (`&str`): The MIME type of the source image
-
-#### Returns:
-- `Result<ImageData, WasmImageError>`: An object containing raw pixel data and image properties or an error
+Resizes an image to exact pixel dimensions using the Lanczos3 filter. Preserves the source format. SVG input is rasterized to PNG.
 
 ---
 
-### `resize_image(file: &[u8], src_type: &str, width: u32, height: u32) -> Result<Vec<u8>, WasmImageError>`
+### `get_pixels`
 
-Resizes an image to exact pixel dimensions, preserving the source format.
+```rust
+pub fn get_pixels(file: &[u8], src_type: &str) -> Result<ImageData, WasmImageError>
+```
 
-#### Parameters:
-- `file` (`&[u8]`): The image file to resize
-- `src_type` (`&str`): The MIME type of the source image (e.g., `"image/png"`)
-- `width` (`u32`): Target width in pixels
-- `height` (`u32`): Target height in pixels
-
-#### Returns:
-- `Result<Vec<u8>, WasmImageError>`: The resized image data or an error
-
-#### Notes:
-- Uses the Lanczos3 filter for high-quality downscaling and upscaling
-- Resizes to exact dimensions without preserving aspect ratio
-- SVG input is rasterized before resizing and output as PNG
+Decodes an image to raw RGBA pixel data.
 
 ---
 
@@ -99,61 +80,58 @@ Resizes an image to exact pixel dimensions, preserving the source format.
 
 ### `Metadata`
 
-Represents metadata of an image.
-
-- `width` (`u32`): Image width
-- `height` (`u32`): Image height
-- `other` (`Option<HashMap<String, String>>`): Additional metadata
-
----
+```rust
+pub struct Metadata {
+    pub width: u32,
+    pub height: u32,
+    pub other: Option<HashMap<String, String>>, // Non-GPS EXIF fields
+    pub gps: Option<HashMap<String, String>>,   // GPS EXIF fields (None if not present)
+    pub errors: Option<Vec<String>>,            // Non-fatal EXIF parse errors
+}
+```
 
 ### `ImageData`
 
-Represents raw image data.
-
-- `width` (`u32`): Image width
-- `height` (`u32`): Image height
-- `aspect_ratio` (`f32`): Aspect ratio
-- `color_depth` (`u8`): Color depth
-- `pixels` (`Vec<u8>`): Raw RGBA pixel values
-
----
+```rust
+pub struct ImageData {
+    pub width: u32,
+    pub height: u32,
+    pub aspect_ratio: f32,
+    pub color_depth: u8,
+    pub pixels: Vec<u8>, // Raw RGBA
+}
+```
 
 ### `Settings`
 
-Settings for conversion.
-
-- Contains various settings depending on the image format
+Format-specific conversion settings. Currently supports SVG rasterization size.
 
 ---
 
 ## Usage Example
 
 ```rust
-use refilelabs_image::{convert_image, get_pixels, load_metadata, resize_image, Settings};
+use refilelabs_image::{convert_image, get_pixels, load_metadata, resize_image};
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Read image file
     let file = fs::read("input.png")?;
     let src_type = "image/png";
-    let target_type = "image/webp";
 
-    // Get metadata
     let metadata = load_metadata(&file, src_type)?;
-    println!("Image dimensions: {}x{}", metadata.width, metadata.height);
+    println!("{}x{}", metadata.width, metadata.height);
+    if let Some(gps) = metadata.gps {
+        println!("GPS: {:?}", gps);
+    }
 
-    // Get pixel data
-    let image_data = get_pixels(&file, src_type)?;
-    println!("Image has {} pixels", image_data.pixels.len() / 4);
-
-    // Convert image
-    let converted = convert_image(&file, src_type, target_type, &None)?;
+    let converted = convert_image(&file, src_type, "image/webp", &None)?;
     fs::write("output.webp", converted)?;
 
-    // Resize image to 800x600
     let resized = resize_image(&file, src_type, 800, 600)?;
     fs::write("output_resized.png", resized)?;
+
+    let pixels = get_pixels(&file, src_type)?;
+    println!("{} RGBA pixels", pixels.pixels.len() / 4);
 
     Ok(())
 }

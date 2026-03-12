@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ImageData } from '#image/wasm/pkg/refilelabs_image'
+import type { ImageData } from '#image/wasm/pkg/bundler/refilelabs_image'
 import { acceptList } from '#image/utils/file_types'
-import init, { getPixels } from '#image/wasm/pkg/refilelabs_image'
+import { getPixels } from '#image/wasm/pkg/bundler/refilelabs_image'
 
 export interface ViewerData {
   width: number
@@ -42,15 +42,10 @@ const imageData = reactive<Partial<Omit<ImageData, 'pixels'>>>({
 })
 
 const tryDrawFile = async (file: File) => {
-  await init()
-
   const start = performance.now()
 
   const arraybuffer = await file.arrayBuffer()
   const arr = new Uint8Array(arraybuffer)
-
-  console.log(file)
-  console.log(getFileMimeType(file))
 
   const res = getPixels(arr, getFileMimeType(file))
 
