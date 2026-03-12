@@ -83,7 +83,7 @@ If you want to use the image utility components in your own project, either incl
 ```ts
 export default defineNuxtConfig({
   extends: [
-   'github:refilelabs/image',
+    'github:refilelabs/image',
   ]
 })
 ```
