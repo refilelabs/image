@@ -33,12 +33,12 @@ export async function runWorker<TData, TRequest = object>(
       else if (type === WorkerMessageType.DONE) {
         clearTimeout(timer)
         worker.terminate()
-        resolve((payload as { success: true, data: TData }).data)
+        resolve(payload.data)
       }
       else if (type === WorkerMessageType.ERROR) {
         clearTimeout(timer)
         worker.terminate()
-        reject(new Error((payload as { success: false, error: string }).error))
+        reject(new Error(payload.error))
       }
     }
 
