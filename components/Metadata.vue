@@ -223,7 +223,7 @@ async function saveEdited() {
       stripGps: stripGps.value || undefined,
       stripAll: false,
     }
-    const result = await runWorker<SaveMetadataWorkerRequest, Uint8Array>(
+    const result = await runWorker<Uint8Array>(
       SaveMetadataWorker,
       params,
       (p) => { progress.value = p },
@@ -264,7 +264,7 @@ async function stripMetadata() {
     const mimeType = getFileMimeType(file.value)
 
     const params: SaveMetadataWorkerRequest = { inputFile: arr, inputType: mimeType, changes: [], stripAll: true }
-    const result = await runWorker<SaveMetadataWorkerRequest, Uint8Array>(
+    const result = await runWorker<Uint8Array>(
       SaveMetadataWorker,
       params,
       (p) => { progress.value = p },
@@ -288,7 +288,7 @@ async function stripMetadata() {
 
 function extractMetadata(arr: Uint8Array, inputType: MimeTypes): Promise<Metadata> {
   const params: MetadataWorkerRequest = { inputFile: arr, inputType }
-  return runWorker<MetadataWorkerRequest, Metadata>(MetadataWorker, params, (p) => {
+  return runWorker<Metadata>(MetadataWorker, params, (p) => {
     progress.value = p
   })
 }

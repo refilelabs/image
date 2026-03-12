@@ -1,7 +1,7 @@
 import type { WorkerMessage, WorkerProgress, WorkerResponse } from '#image/workers/shared_types'
 import { WorkerMessageType } from '#image/workers/shared_types'
 
-export async function runWorker<TRequest, TData>(
+export async function runWorker<TData, TRequest = object>(
   WorkerCtor: new () => Worker,
   params: TRequest,
   onProgress?: (p: WorkerProgress) => void,
@@ -13,7 +13,7 @@ export async function runWorker<TRequest, TData>(
     let timer: ReturnType<typeof setTimeout>
 
     const scheduleTimeout = () => {
-      if (timer) {
+      if (timer as ReturnType<typeof setTimeout> | undefined) {
         clearTimeout(timer)
       }
       timer = setTimeout(() => {
