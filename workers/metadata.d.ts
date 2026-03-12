@@ -4,4 +4,4 @@ import type { WorkerMessage, WorkerRequest, WorkerResponse } from './shared_type
 export type MetadataWorkerResponse = WorkerResponse<Metadata>
 export type MetadataWorkerMessage = WorkerMessage<MetadataWorkerResponse>
 
-export interface MetadataWorkerRequest extends WorkerRequest {}
+export type MetadataWorkerRequest = WorkerRequest
