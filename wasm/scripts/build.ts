@@ -19,9 +19,9 @@ await writePackageJSON(`${wasmDir}/pkg/package.json`, {
   repository: base.repository,
   exports: {
     '.': {
-      node: './node/refilelabs_image.js',
-      browser: './web/refilelabs_image.js',
-      default: './bundler/refilelabs_image.js',
+      node: { types: './node/refilelabs_image.d.ts', default: './node/refilelabs_image.js' },
+      browser: { types: './web/refilelabs_image.d.ts', default: './web/refilelabs_image.js' },
+      default: { types: './bundler/refilelabs_image.d.ts', default: './bundler/refilelabs_image.js' },
     },
   },
   files: ['bundler/', 'node/', 'web/'],
