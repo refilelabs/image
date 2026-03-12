@@ -1,0 +1,7 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  ci:
+    uses: refilelabs/.github/.github/workflows/wasm-ci.yml@main

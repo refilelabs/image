@@ -1,0 +1,7 @@
+name: Publish
+on:
+  push:
+    tags: ['v*']
+jobs:
+  publish:
+    uses: refilelabs/.github/.github/workflows/wasm-publish.yml@main
