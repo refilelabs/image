@@ -1,5 +1,5 @@
 import type { WorkerProgress } from './shared_types'
-import { WorkerMessageType } from './shared_types'
+import { WorkerMessageType, parseWorkerError } from './shared_types'
 
 type ProgressCallback = (update: WorkerProgress) => void
 
@@ -17,7 +17,7 @@ export function createWorker<TRequest, TResult>(
       globalThis.postMessage({ type: WorkerMessageType.DONE, payload: { success: true, data: result } })
     }
     catch (err) {
-      globalThis.postMessage({ type: WorkerMessageType.ERROR, payload: { success: false, error: String(err) } })
+      globalThis.postMessage({ type: WorkerMessageType.ERROR, payload: { success: false, error: parseWorkerError(err) } })
     }
   }, false)
 }
