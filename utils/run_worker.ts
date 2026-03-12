@@ -10,10 +10,10 @@ export async function runWorker<TData, TRequest = object>(
 ): Promise<TData> {
   return new Promise((resolve, reject) => {
     const worker = new WorkerCtor()
-    let timer: ReturnType<typeof setTimeout>
+    let timer: ReturnType<typeof setTimeout> | undefined
 
     const scheduleTimeout = () => {
-      if (timer as ReturnType<typeof setTimeout> | undefined) {
+      if (timer) {
         clearTimeout(timer)
       }
       timer = setTimeout(() => {
