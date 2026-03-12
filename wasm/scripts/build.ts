@@ -3,6 +3,11 @@ import { readPackageJSON, writePackageJSON } from 'pkg-types'
 
 const wasmDir = import.meta.dir + '/..'
 
+if (process.env.SKIP_WASM_BUILD === '1') {
+  console.log('Skipping WASM build (SKIP_WASM_BUILD=1)')
+  process.exit(0)
+}
+
 await Promise.all([
   $`wasm-pack build --target bundler --out-dir pkg/bundler --release --features wasm`.cwd(wasmDir),
   $`wasm-pack build --target nodejs  --out-dir pkg/node    --release --features wasm`.cwd(wasmDir),
