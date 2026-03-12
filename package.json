@@ -17,6 +17,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
+    "@antfu/eslint-config": "4.12.0",
     "@nuxt/eslint": "latest",
     "@nuxt/ui": "^4.0.1",
     "@types/bun": "^1.2.5",
