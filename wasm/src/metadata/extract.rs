@@ -194,7 +194,7 @@ impl TryFrom<RawSourceImage<'_>> for Metadata {
                 Ok(metadata)
             }
             RawSourceImage::Svg(svg) => {
-                let tree = resvg::usvg::Tree::from_data(svg, &Options::default()).unwrap();
+                let tree = resvg::usvg::Tree::from_data(svg, &Options::default())?;
                 let size = tree.size();
                 let (width, height) = (size.width() as u32, size.height() as u32);
                 Ok(Self {
