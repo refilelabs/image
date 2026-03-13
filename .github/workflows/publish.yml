@@ -4,4 +4,7 @@ on:
     tags: ['v*']
 jobs:
   publish:
+    permissions:
+      id-token: write
+      contents: read
     uses: refilelabs/.github/.github/workflows/wasm-publish.yml@main
