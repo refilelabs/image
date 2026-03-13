@@ -30,8 +30,8 @@ pub(super) static PRESET_AUTHOR: &[exif::Tag] = &[
     exif::Tag::Copyright,
 ];
 
-/// GPS tags for the GPS preset. Stripped as a unit by strip_gps_tags on save,
-/// so they intentionally do not appear in EDITABLE_TAGS.
+/// GPS tags for the GPS preset. Stripped as a unit by `strip_gps_tags` on save,
+/// so they intentionally do not appear in `EDITABLE_TAGS`.
 pub(super) static PRESET_GPS: &[exif::Tag] = &[
     exif::Tag::GPSVersionID,
     exif::Tag::GPSLatitudeRef,

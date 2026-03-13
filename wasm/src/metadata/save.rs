@@ -80,7 +80,7 @@ fn apply_tag_changes(exif_meta: &mut LittleExifMetadata, changes: &[MetadataChan
     }
 }
 
-/// Re-encodes the image without preserving any metadata. Used for strip_all.
+/// Re-encodes the image without preserving any metadata. Used for `strip_all`.
 fn encode_image_to_vec(
     img: &image::DynamicImage,
     format: ImageFormat,
@@ -114,8 +114,8 @@ fn encode_image_to_vec(
     Ok(output)
 }
 
-/// Re-encodes the image and embeds EXIF via ImageEncoder::set_exif_metadata.
-/// `exif` must be raw TIFF-structured bytes (the output of LittleExifMetadata::encode()).
+/// Re-encodes the image and embeds EXIF via `ImageEncoder::set_exif_metadata`.
+/// `exif` must be raw TIFF-structured bytes (the output of `LittleExifMetadata::encode()`).
 /// The encoder is responsible for wrapping them in the format-specific container
 /// (APP1 for JPEG, eXIf chunk for PNG, EXIF chunk for WebP).
 /// PNG and WebP are supported. TIFF falls back to re-encode without EXIF.
@@ -220,7 +220,9 @@ pub fn save_metadata(
         if strip_gps {
             strip_gps_tags(&mut exif_meta);
         }
-        let exif_bytes = exif_meta.encode().map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let exif_bytes = exif_meta
+            .encode()
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
         crate::progress::report(cb, 80.0, "Encoding image");
         encode_image_with_exif_to_vec(&img, format, exif_bytes)
             .map_err(|e| JsValue::from_str(&e.to_string()))?
