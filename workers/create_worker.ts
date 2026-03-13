@@ -1,5 +1,5 @@
 import type { WorkerProgress } from './shared_types'
-import { WorkerMessageType, parseWorkerError } from './shared_types'
+import { parseWorkerError, WorkerMessageType } from './shared_types'
 
 type ProgressCallback = (update: WorkerProgress) => void
 
