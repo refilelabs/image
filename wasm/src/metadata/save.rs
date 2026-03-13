@@ -220,7 +220,7 @@ pub fn save_metadata(
         if strip_gps {
             strip_gps_tags(&mut exif_meta);
         }
-        let exif_bytes = exif_meta.encode().unwrap_or_default();
+        let exif_bytes = exif_meta.encode().map_err(|e| JsValue::from_str(&e.to_string()))?;
         crate::progress::report(cb, 80.0, "Encoding image");
         encode_image_with_exif_to_vec(&img, format, exif_bytes)
             .map_err(|e| JsValue::from_str(&e.to_string()))?
