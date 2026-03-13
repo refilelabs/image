@@ -1,11 +1,11 @@
 [package]
 name = "refilelabs-image"
-version = "0.2.6"
+version = "0.2.7"
 edition = "2021"
 repository = "https://github.com/refilelabs/image"
 homepage = "https://refilelabs.com/image"
 keywords = ["image", "processing", "wasm", "web"]
-license-file = "./LICENSE"
+license = "MIT"
 readme = "./README.md"
 description = "Wasm-based image processing library developed by re;file labs"
 

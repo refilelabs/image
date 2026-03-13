@@ -15,8 +15,13 @@ await writePackageJSON(`${wasmDir}/pkg/package.json`, {
   name: '@refilelabs/image',
   version: base.version,
   description: base.description,
-  license: base.license,
-  repository: base.repository,
+  license: 'MIT',
+  homepage: 'https://refilelabs.com/image',
+  keywords: ['image', 'processing', 'wasm', 'web'],
+  repository: {
+    type: 'git',
+    url: 'git+https://github.com/refilelabs/image.git',
+  },
   exports: {
     '.': {
       node: { types: './node/refilelabs_image.d.ts', default: './node/refilelabs_image.js' },
@@ -29,4 +34,7 @@ await writePackageJSON(`${wasmDir}/pkg/package.json`, {
 })
 
 await Bun.write(`${wasmDir}/pkg/README.md`, Bun.file(`${wasmDir}/README_JS.md`))
-await Bun.write(`${wasmDir}/pkg/.npmignore`, '')
+
+for (const dir of ['', 'bundler', 'node', 'web']) {
+  await Bun.write(`${wasmDir}/pkg/${dir ? `${dir}/` : ''}.npmignore`, '')
+}
