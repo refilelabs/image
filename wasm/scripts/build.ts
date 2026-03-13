@@ -35,6 +35,13 @@ await writePackageJSON(`${wasmDir}/pkg/package.json`, {
 
 await Bun.write(`${wasmDir}/pkg/README.md`, Bun.file(`${wasmDir}/README_JS.md`))
 
+const wasm_pack_extras = ['package.json', 'LICENSE', 'README.md', '.gitignore']
+await Promise.all(
+  ['bundler', 'node', 'web'].flatMap(dir =>
+    wasm_pack_extras.map(file => $`rm -f ${wasmDir}/pkg/${dir}/${file}`),
+  ),
+)
+
 for (const dir of ['', 'bundler', 'node', 'web']) {
   await Bun.write(`${wasmDir}/pkg/${dir ? `${dir}/` : ''}.npmignore`, '')
 }
