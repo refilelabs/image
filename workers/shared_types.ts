@@ -17,7 +17,7 @@ export interface WorkerProgress {
   message: string
 }
 
-export type WorkerMessage<T extends WorkerResponse<any>> = {
+export type WorkerMessage<T extends WorkerResponse<unknown>> = {
   type: WorkerMessageType.DONE
   payload: T & { success: true }
 } | {

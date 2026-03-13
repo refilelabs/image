@@ -9,7 +9,7 @@ export class Dimensions {
 
   static fromSVGViewBox(viewBox: string): Dimensions {
     const [_x, _y, width, height] = viewBox.split(' ').map(Number.parseFloat)
-    return new Dimensions(width, height)
+    return new Dimensions(width!, height!)
   }
 
   public getAspectRatio(): number {

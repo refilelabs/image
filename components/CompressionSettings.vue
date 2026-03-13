@@ -9,8 +9,8 @@ export interface CompressionSettings {
 
 <script setup lang="ts">
 const props = withDefaults(defineProps<{
-  quality: number
-  type: CompressionSettings['type']
+  quality?: number
+  type?: CompressionSettings['type']
 }>(), {
   quality: 0.7,
   type: 'image/webp',
