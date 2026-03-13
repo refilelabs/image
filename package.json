@@ -12,7 +12,7 @@
     "postinstall": "nuxt prepare .playground && bun run wasm:bundle",
     "rust:publish": "cd wasm && cargo publish",
     "wasm:bundle": "bun run wasm/scripts/build.ts",
-    "wasm:publish": "bun run wasm:bundle && cd wasm/pkg && npm publish --tag latest --access public",
+    "wasm:publish": "bun run wasm:bundle && cd wasm/pkg && npm publish --tag latest --access public --provenance",
     "publish": "bun run wasm:publish && bun run rust:publish",
     "lint": "eslint ."
   },
