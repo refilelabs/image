@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/refilelabs-image.svg)](https://crates.io/crates/refilelabs-image)
 [![Documentation](https://docs.rs/refilelabs-image/badge.svg)](https://docs.rs/refilelabs-image)
-[![NPM Version](https://img.shields.io/npm/v/%40refilelabs%2Fimage)](https://www.npmjs.com/package/@refilelabs/image)
+[![npm](https://npmx.dev/api/registry/badge/version/@refilelabs/image?label=npm)](https://npmx.dev/package/@refilelabs/image)
 [![CI](https://github.com/refilelabs/image/actions/workflows/ci.yml/badge.svg)](https://github.com/refilelabs/image/actions/workflows/ci.yml)
 
 The `refilelabs/image` repository provides core utilities for image manipulation within the [**re;file labs**](https://refilelabs.com) platform. All operations run securely in the browser, powered by WebAssembly.

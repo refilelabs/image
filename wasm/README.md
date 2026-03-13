@@ -22,7 +22,7 @@ refilelabs-image = "0.2.5"
 - Resize images to exact pixel dimensions
 - Custom conversion settings (e.g. SVG rasterization size)
 
-> **Note:** The native Rust API (`#[cfg(not(feature = "wasm"))]`) excludes `save_metadata`, which requires wasm-bindgen types. For JavaScript/WASM usage see the [npm package](https://www.npmjs.com/package/@refilelabs/image).
+> **Note:** The native Rust API (`#[cfg(not(feature = "wasm"))]`) excludes `save_metadata`, which requires wasm-bindgen types. For JavaScript/WASM usage see the [npm package](https://npmx.dev/package/@refilelabs/image).
 
 ## API Reference
 

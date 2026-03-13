@@ -1,5 +1,5 @@
 # @refilelabs/image
-[![NPM Version](https://img.shields.io/npm/v/%40refilelabs%2Fimage)](https://www.npmjs.com/package/@refilelabs/image)
+[![NPM Version](https://npmx.dev/api/registry/badge/version/@refilelabs/image?label=npm)](https://npmx.dev/package/@refilelabs/image)
 
 A WebAssembly-powered library for advanced image manipulation and format conversion. Powered by Rust and compiled to WebAssembly — runs in the browser, Node.js, and any modern bundler environment.
 
