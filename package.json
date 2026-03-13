@@ -13,7 +13,7 @@
     "rust:publish": "cd wasm && cargo publish",
     "wasm:bundle": "bun run wasm/scripts/build.ts",
     "wasm:publish": "bun run wasm:bundle && cd wasm/pkg && npm publish --tag latest --access public --provenance",
-    "publish": "bun run wasm:publish && bun run rust:publish",
+    "publish": "bun run rust:publish && bun run wasm:publish",
     "lint": "eslint ."
   },
   "devDependencies": {

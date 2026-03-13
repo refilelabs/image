@@ -29,3 +29,4 @@ await writePackageJSON(`${wasmDir}/pkg/package.json`, {
 })
 
 await Bun.write(`${wasmDir}/pkg/README.md`, Bun.file(`${wasmDir}/README_JS.md`))
+await Bun.write(`${wasmDir}/pkg/.npmignore`, '')
