@@ -14,6 +14,11 @@ fn resize_and_write(
     width: u32,
     height: u32,
 ) -> Result<Vec<u8>, WasmImageError> {
+    if width == 0 || height == 0 {
+        return Err(WasmImageError::EncodingError(
+            "Width and height must be greater than 0".to_string(),
+        ));
+    }
     let img = img.rasterize(None)?;
 
     let resized = img.resize_exact(width, height, FilterType::Lanczos3);
