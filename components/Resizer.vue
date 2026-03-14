@@ -133,7 +133,7 @@ async function download() {
     const error = parseWorkerError(e)
     toast.add({
       title: 'Error',
-      icon: 'i-heroicons-exclamation-circle',
+      icon: 'heroicons:exclamation-circle',
       description: error,
       color: 'error',
     })
@@ -166,18 +166,18 @@ onMounted(() => {
             class="max-w-full max-h-full"
             :style="{ maxWidth: `${containerWidth}px`, maxHeight: `${containerHeight}px` }"
           />
-          <span class="absolute top-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">
+          <span class="absolute top-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium truncate max-w-[50%]">
             {{ file?.name }}
           </span>
-          <span class="absolute bottom-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">
-            {{ originalSize[0] }} × {{ originalSize[1] }}px
+          <span class="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium">
+            {{ originalSize[0] }}×{{ originalSize[1] }}px
           </span>
-          <span class="absolute bottom-0 right-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">
-            {{ size[0] }} × {{ size[1] }}px
+          <span class="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium">
+            {{ size[0] }}×{{ size[1] }}px
           </span>
-          <div class="absolute top-0 right-0 p-2">
+          <div class="absolute top-2 right-2">
             <UButton
-              label="Remove image" color="neutral" variant="subtle"
+              label="Remove image" color="neutral" variant="subtle" size="sm"
               icon="heroicons:trash" @click.prevent="file = undefined"
             />
           </div>
@@ -185,15 +185,16 @@ onMounted(() => {
       </template>
     </InputsMinimal>
 
-    <div v-if="file" class="flex flex-col sm:flex-row items-start sm:items-end gap-4 pt-4">
+    <div v-if="file" class="mt-4 rounded-xl border border-default bg-elevated p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
       <InputsSize
         v-model:size="size"
         :aspect-ratio="aspectRatio"
         :source-dimensions="[originalSize[0], originalSize[1]]"
+        class="flex-1"
       />
 
       <UButton
-        class="cursor-pointer sm:ml-auto"
+        class="cursor-pointer sm:self-end"
         trailing-icon="heroicons:arrow-down-tray"
         :disabled="!file || !size[0] || !size[1]"
         @click="download"

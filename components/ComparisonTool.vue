@@ -51,12 +51,17 @@ onMounted(async () => {
       <slot />
     </div>
     <div
-      ref="draggable" class="h-full absolute bg-(--ui-primary)/70 w-1 cursor-ew-resize" :style="style"
+      ref="draggable"
+      class="h-full absolute w-px bg-white/80 shadow-[0_0_8px_rgba(0,0,0,0.4)] cursor-ew-resize"
+      :style="style"
     >
-      <div class="h-8 w-8 absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center bg-(--ui-bg-accented)">
-        <UIcon name="heroicons:chevron-double-left" class="text-(--ui-primary)" />
-        <UIcon name="heroicons:chevron-double-right" class="text-(--ui-primary)" />
+      <!-- Handle -->
+      <div class="h-9 w-9 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full flex items-center justify-center bg-white shadow-lg">
+        <UIcon name="heroicons:arrows-right-left" class="w-4 h-4 text-gray-700" />
       </div>
+      <!-- Before / After labels -->
+      <span class="absolute top-1/2 -translate-y-1/2 right-full mr-6 px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-white text-xs font-medium pointer-events-none select-none whitespace-nowrap">Before</span>
+      <span class="absolute top-1/2 -translate-y-1/2 left-full ml-6 px-2 py-0.5 rounded-md bg-black/40 backdrop-blur-sm text-white text-xs font-medium pointer-events-none select-none whitespace-nowrap">After</span>
     </div>
   </div>
 </template>

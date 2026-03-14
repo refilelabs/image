@@ -143,11 +143,11 @@ async function startConversion() {
 
       toast.add({
         title: 'Error',
-        icon: 'i-heroicons-exclamation-circle',
+        icon: 'heroicons:exclamation-circle',
         description: error,
         color: 'error',
         actions: [{
-          leadingIcon: 'i-heroicons-arrow-path',
+          leadingIcon: 'heroicons:arrow-path',
           label: 'Retry',
           onClick: () => startConversion(),
         }],
@@ -187,33 +187,29 @@ watch(file, () => {
 
 <template>
   <div>
-    <InputsImage v-model="file" :hint="hint" :accept="acceptList" class="w-full">
-      Choose File
-    </InputsImage>
+    <InputsImage v-model="file" :hint="hint" :accept="acceptList" class="w-full" />
 
-    <div class="flex flex-row items-end space-x-10 pt-3">
-      <div class="grow">
-        <UFormField label="Output Type">
-          <USelect v-model="outputType" :items="Object.entries(outputFileEndings).map(([ending, imageType]) => ({ value: ending, label: imageType }))" value-key="value" label-key="label" />
-        </UFormField>
-      </div>
-      <UButton class="cursor-pointer" @click="startConversion">
-        Start Conversion
+    <div class="mt-4 rounded-xl border border-default bg-elevated p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+      <UFormField label="Output Format" class="flex-1">
+        <USelect v-model="outputType" :items="Object.entries(outputFileEndings).map(([ending, imageType]) => ({ value: ending, label: imageType }))" value-key="value" label-key="label" />
+      </UFormField>
+      <UButton class="cursor-pointer sm:self-end" :disabled="!file" trailing-icon="heroicons:arrow-path-rounded-square" @click="startConversion">
+        Convert Image
       </UButton>
     </div>
 
     <LazyUAlert
       v-if="warning" variant="soft" color="warning" v-bind="warning"
-      :close-button="{ icon: 'i-heroicons-x-mark-20-solid', color: 'gray', variant: 'link', padded: false }"
-      class="mt-6" @close="warning = undefined"
+      :close-button="{ icon: 'heroicons:x-mark', color: 'neutral', variant: 'link', padded: false }"
+      class="mt-4" @close="warning = undefined"
     />
 
-    <UCard v-if="svgData !== undefined && size !== undefined" class="mt-6">
-      <template #header>
-        Svg Settings
-      </template>
+    <div v-if="svgData !== undefined && size !== undefined" class="mt-4 rounded-xl border border-default bg-elevated p-4">
+      <p class="text-sm font-medium text-highlighted mb-3">
+        SVG Dimensions
+      </p>
       <LazyInputsSize v-model:size="size" :aspect-ratio="svgData ? svgData.aspectRatio : 2" :source-dimensions="[svgData ? svgData.width : 0, svgData ? svgData.height : 0]" />
-    </UCard>
+    </div>
 
     <ImageWorkerProgress :progress="progress" />
   </div>

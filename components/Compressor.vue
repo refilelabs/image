@@ -218,17 +218,15 @@ onMounted(() => {
                   }"
                 />
               </div>
-              <span class="absolute top-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ file?.name }}</span>
-              <span class="absolute bottom-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ formatBytes(file?.size || 0) }}</span>
-              <div
-                class="absolute bottom-0 right-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned) flex flex-row items-center space-x-2"
-              >
+              <span class="absolute top-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium truncate max-w-[50%]">{{ file?.name }}</span>
+              <span class="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium">{{ formatBytes(file?.size || 0) }}</span>
+              <div class="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium flex flex-row items-center gap-1.5">
                 <template v-if="compressedSize === undefined">
-                  <UIcon name="heroicons:arrow-path" class="animate-spin" />
+                  <UIcon name="heroicons:arrow-path" class="animate-spin h-3 w-3" />
                   <span>Compressing...</span>
                 </template>
                 <template v-else>
-                  <UIcon name="heroicons:check-circle" class="text-(--ui-success)" />
+                  <UIcon name="heroicons:check-circle" class="text-success h-3 w-3" />
                   <span>{{ formatBytes(compressedSize) }}</span>
                 </template>
               </div>
@@ -245,16 +243,23 @@ onMounted(() => {
       </template>
     </InputsMinimal>
 
-    <div class="flex flex-row justify-end pt-3">
-      <UButton class="cursor-pointer" :disabled="!file && !imageData.pixels" trailing-icon="heroicons:arrow-down-tray" @click="compress">
-        Start Compression
+    <div v-if="file" class="mt-4 rounded-xl border border-default bg-elevated p-4 flex items-center justify-between gap-4">
+      <div v-if="compressedSize !== undefined" class="flex items-center gap-2 text-sm">
+        <span class="text-muted">{{ formatBytes(file?.size || 0) }}</span>
+        <UIcon name="heroicons:arrow-right-16-solid" class="h-3.5 w-3.5 text-dimmed" />
+        <span class="font-semibold text-success">{{ formatBytes(compressedSize) }}</span>
+        <span class="text-xs text-muted">({{ ((1 - compressedSize / (file?.size || 1)) * 100).toFixed(0) }}% smaller)</span>
+      </div>
+      <div v-else class="flex items-center gap-2 text-sm text-muted">
+        <UIcon name="heroicons:arrow-path" class="animate-spin h-4 w-4" />
+        <span>Generating preview...</span>
+      </div>
+      <UButton trailing-icon="heroicons:arrow-down-tray" :disabled="!file || !imageData.pixels" @click="compress">
+        Download Compressed
       </UButton>
     </div>
 
-    <aside v-if="progress !== undefined" class="pt-6 w-full text-center">
-      <UProgress v-model="progress.progress" />
-      {{ progress.message }}
-    </aside>
+    <ImageWorkerProgress :progress="progress" />
   </div>
 </template>
 

@@ -108,15 +108,15 @@ onMounted(() => {
               maxHeight: `${maxHeight}px`,
             }"
           />
-          <span class="absolute top-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ file?.name }}</span>
-          <span class="absolute bottom-0 left-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned)">{{ formatBytes(file?.size || 0) }}</span>
-          <div class="absolute bottom-0 right-0 p-2 bg-(--ui-bg-accented) text-(--ui-text-toned) grid grid-cols-2">
-            <span>Dimensions:</span> <span>{{ imageData.width }}x{{ imageData.height }}</span>
-            <span>Aspect Ratio:</span> <span>{{ imageData.aspect_ratio }}</span>
-            <span>Color Depth:</span> <span>{{ imageData.color_depth }} bits</span>
+          <span class="absolute top-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium truncate max-w-[50%]">{{ file?.name }}</span>
+          <span class="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium">{{ formatBytes(file?.size || 0) }}</span>
+          <div class="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium grid grid-cols-2 gap-x-3 gap-y-0.5">
+            <span class="text-dimmed">Dimensions</span> <span>{{ imageData.width }}×{{ imageData.height }}</span>
+            <span class="text-dimmed">Aspect ratio</span> <span>{{ imageData.aspect_ratio }}</span>
+            <span class="text-dimmed">Color depth</span> <span>{{ imageData.color_depth }} bits</span>
           </div>
-          <span class="absolute top-0 right-0 bg-(--ui-bg-accented) text-(--ui-text-toned)">
-            <UButton variant="link" size="xl" color="neutral" label="Clear" icon="heroicons:trash" @click.prevent="file = undefined" />
+          <span class="absolute top-2 right-2">
+            <UButton variant="subtle" color="neutral" size="sm" label="Clear" icon="heroicons:trash" @click.prevent="file = undefined" />
           </span>
         </div>
       </template>

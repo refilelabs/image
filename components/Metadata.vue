@@ -246,7 +246,7 @@ async function saveEdited() {
     toast.add({ title: 'Success', icon: 'heroicons:check-circle', description: 'Metadata saved.', color: 'success' })
   }
   catch (e) {
-    toast.add({ title: 'Error', icon: 'i-heroicons-exclamation-circle', description: parseWorkerError(e), color: 'error' })
+    toast.add({ title: 'Error', icon: 'heroicons:exclamation-circle', description: parseWorkerError(e), color: 'error' })
   }
   finally {
     saving.value = false
@@ -278,7 +278,7 @@ async function stripMetadata() {
     toast.add({ title: 'Success', icon: 'heroicons:check-circle', description: 'All metadata stripped.', color: 'success' })
   }
   catch (e) {
-    toast.add({ title: 'Error', icon: 'i-heroicons-exclamation-circle', description: parseWorkerError(e), color: 'error' })
+    toast.add({ title: 'Error', icon: 'heroicons:exclamation-circle', description: parseWorkerError(e), color: 'error' })
   }
   finally {
     saving.value = false
@@ -325,10 +325,10 @@ async function startExtraction() {
   catch (e) {
     toast.add({
       title: 'Error',
-      icon: 'i-heroicons-exclamation-circle',
+      icon: 'heroicons:exclamation-circle',
       description: parseWorkerError(e),
       color: 'error',
-      actions: [{ leadingIcon: 'i-heroicons-arrow-path', label: 'Retry', onClick: () => startExtraction() }],
+      actions: [{ leadingIcon: 'heroicons:arrow-path', label: 'Retry', onClick: () => startExtraction() }],
     })
     progress.value = undefined
   }
@@ -363,7 +363,7 @@ onMounted(async () => {
 
     <ImageWorkerProgress :progress="progress" />
 
-    <div v-if="metadata" class="mt-6 flex-1 divide-y divide-accented w-full border border-default rounded-[calc(var(--ui-radius)*2)] overflow-hidden">
+    <div v-if="metadata" class="mt-6 flex-1 divide-y divide-accented w-full border border-default rounded-xl overflow-hidden">
       <div class="flex items-center justify-between gap-2 px-4 py-3.5 overflow-x-auto">
         <h3 class="text-lg font-semibold">
           Metadata
