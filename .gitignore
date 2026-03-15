@@ -24,3 +24,4 @@ dist
 wasm/target
 wasm/Cargo.lock
 bun.lockb
+wasm/pkg
