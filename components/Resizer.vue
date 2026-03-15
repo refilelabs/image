@@ -3,7 +3,8 @@ import type { ResizeWorkerRequest } from '#image/workers/resize.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import { acceptList } from '#image/utils/file_types'
 import { runWorker } from '#image/utils/run_worker'
-import { getPixels } from '#image/wasm/pkg/bundler/refilelabs_image'
+import { ensureInit } from '#image/wasm/init'
+import { getPixels } from '#image/wasm/pkg/web/refilelabs_image'
 import { parseWorkerError } from '#image/workers/shared_types'
 import ResizeWorker from '@/workers/resize.ts?worker'
 
@@ -68,6 +69,7 @@ watch(size, () => drawPreview(), { flush: 'post' })
 
 async function tryLoadImage(f: File) {
   const arr = new Uint8Array(await f.arrayBuffer())
+  await ensureInit()
   const res = getPixels(arr, getFileMimeType(f))
   const { width, height, pixels: rawPixels } = res
 

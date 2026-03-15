@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { Metadata, MetadataPresets } from '#image/wasm/pkg/bundler/refilelabs_image'
+import type { Metadata, MetadataPresets } from '#image/wasm/pkg/web/refilelabs_image'
 import type { MetadataWorkerRequest } from '#image/workers/metadata.d'
 import type { SaveMetadataWorkerRequest } from '#image/workers/save_metadata.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import { runWorker } from '#image/utils/run_worker'
-import { deletableFields, editableFields, metadataPresets } from '#image/wasm/pkg/bundler/refilelabs_image'
+import { ensureInit } from '#image/wasm/init'
+import { deletableFields, editableFields, metadataPresets } from '#image/wasm/pkg/web/refilelabs_image'
 import { parseWorkerError } from '#image/workers/shared_types'
 import MetadataWorker from '@/workers/metadata.ts?worker'
 import SaveMetadataWorker from '@/workers/save_metadata.ts?worker'
@@ -345,6 +346,7 @@ watch(file, (newFile, oldFile) => {
 })
 
 onMounted(async () => {
+  await ensureInit()
   editableFieldsSet.value = new Set(editableFields())
   deletableFieldsSet.value = new Set(deletableFields())
   presets.value = metadataPresets()

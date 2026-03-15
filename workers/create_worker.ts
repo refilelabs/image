@@ -1,4 +1,5 @@
 import type { WorkerProgress } from './shared_types'
+import { ensureInit } from '#image/wasm/init'
 import { parseWorkerError, WorkerMessageType } from './shared_types'
 
 type ProgressCallback = (update: WorkerProgress) => void
@@ -12,12 +13,16 @@ export function createWorker<TRequest, TResult>(
 
   globalThis.addEventListener('message', (e: MessageEvent<TRequest>) => {
     callback({ progress: 0, message: 'Initializing...' })
-    try {
-      const result = handler(e.data, callback)
-      globalThis.postMessage({ type: WorkerMessageType.DONE, payload: { success: true, data: result } })
-    }
-    catch (err) {
+    ensureInit().then(() => {
+      try {
+        const result = handler(e.data, callback)
+        globalThis.postMessage({ type: WorkerMessageType.DONE, payload: { success: true, data: result } })
+      }
+      catch (err) {
+        globalThis.postMessage({ type: WorkerMessageType.ERROR, payload: { success: false, error: parseWorkerError(err) } })
+      }
+    }).catch((err) => {
       globalThis.postMessage({ type: WorkerMessageType.ERROR, payload: { success: false, error: parseWorkerError(err) } })
-    }
+    })
   })
 }
