@@ -224,7 +224,7 @@ onMounted(() => {
               <span class="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium">{{ formatBytes(file?.size || 0) }}</span>
               <div class="absolute bottom-2 right-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium flex flex-row items-center gap-1.5">
                 <template v-if="compressedSize === undefined">
-                  <UIcon name="heroicons:arrow-path" class="animate-spin h-3 w-3" />
+                  <UIcon name="heroicons:arrow-path" class="animate-spin motion-reduce:animate-none h-3 w-3" />
                   <span>Compressing...</span>
                 </template>
                 <template v-else>
@@ -253,7 +253,7 @@ onMounted(() => {
         <span class="text-xs text-muted">({{ ((1 - compressedSize / (file?.size || 1)) * 100).toFixed(0) }}% smaller)</span>
       </div>
       <div v-else class="flex items-center gap-2 text-sm text-muted">
-        <UIcon name="heroicons:arrow-path" class="animate-spin h-4 w-4" />
+        <UIcon name="heroicons:arrow-path" class="animate-spin motion-reduce:animate-none h-4 w-4" />
         <span>Generating preview...</span>
       </div>
       <UButton trailing-icon="heroicons:arrow-down-tray" :disabled="!file || !imageData.pixels" @click="compress">
