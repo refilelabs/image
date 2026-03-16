@@ -78,15 +78,18 @@ const editableFieldsSet = shallowRef<Set<string>>(new Set())
 const deletableFieldsSet = shallowRef<Set<string>>(new Set())
 
 // Strip all works for every supported format via re-encode.
-const canEditMetadata = computed(() =>
-  !!file.value && new Set(['image/jpeg', 'image/png', 'image/webp', 'image/tiff']).has(getFileMimeType(file.value)))
-
+const METADATA_EDITABLE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/tiff'])
 // Partial field editing requires a format whose encoder supports set_exif_metadata.
 // JPEG uses little_exif write_to_vec (direct byte patch, no re-encode).
 // PNG and WebP use ImageEncoder::set_exif_metadata (re-encode + EXIF embed).
 // TIFF: set_exif_metadata returns UnsupportedError — editing is not available.
+const FIELD_EDITABLE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp'])
+
+const canEditMetadata = computed(() =>
+  !!file.value && METADATA_EDITABLE_TYPES.has(getFileMimeType(file.value)))
+
 const canEditFields = computed(() =>
-  !!file.value && new Set(['image/jpeg', 'image/png', 'image/webp']).has(getFileMimeType(file.value)))
+  !!file.value && FIELD_EDITABLE_TYPES.has(getFileMimeType(file.value)))
 
 const presets = ref<MetadataPresets>()
 
