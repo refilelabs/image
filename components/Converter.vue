@@ -191,7 +191,7 @@ watch(file, () => {
 
     <div class="mt-4 rounded-xl border border-default bg-elevated p-4 flex flex-col sm:flex-row sm:items-center gap-4">
       <UFormField label="Output Format" class="flex-1">
-        <USelect v-model="outputType" :items="Object.entries(outputFileEndings).map(([ending, imageType]) => ({ value: ending, label: imageType }))" value-key="value" label-key="label" />
+        <USelectMenu v-model="outputType" :items="Object.entries(outputFileEndings).map(([mime, ext]) => ({ value: mime, label: ext.toUpperCase() }))" value-key="value" label-key="label" :ui="{ content: 'min-w-40' }" />
       </UFormField>
       <UButton class="cursor-pointer sm:self-end" :disabled="!file" trailing-icon="heroicons:arrow-path-rounded-square" @click="startConversion">
         Convert Image
