@@ -8,6 +8,7 @@
 #![forbid(unsafe_code)]
 
 pub mod convert;
+pub mod crop;
 pub mod error;
 pub(crate) mod load;
 pub mod metadata;
@@ -17,7 +18,7 @@ pub mod resize;
 pub(crate) mod source_type;
 pub mod view;
 
-pub use {convert::convert_image, metadata::load_metadata, resize::resize_image, view::get_pixels};
+pub use {convert::convert_image, crop::crop_image, metadata::load_metadata, resize::resize_image, view::get_pixels};
 
 #[cfg(feature = "wasm")]
 pub use metadata::save_metadata;
