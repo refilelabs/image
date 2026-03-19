@@ -3,7 +3,7 @@
 [![Crates.io](https://img.shields.io/crates/v/refilelabs-image.svg)](https://crates.io/crates/refilelabs-image)
 [![Documentation](https://docs.rs/refilelabs-image/badge.svg)](https://docs.rs/refilelabs-image)
 
-A Rust library for advanced image manipulation and format conversion. Provides tools for loading image metadata, converting images, resizing images, and retrieving raw pixel data.
+A Rust library for advanced image manipulation and format conversion. Provides tools for loading image metadata, converting images, resizing images, cropping images, and retrieving raw pixel data.
 
 Used under the hood at [re;file labs](https://refilelabs.com/image) to power all image processing features.
 
@@ -20,6 +20,7 @@ refilelabs-image = "0.2.5"
 - Retrieve raw RGBA pixel data
 - Convert images between formats
 - Resize images to exact pixel dimensions
+- Crop images to any region
 - Custom conversion settings (e.g. SVG rasterization size)
 
 > **Note:** The native Rust API (`#[cfg(not(feature = "wasm"))]`) excludes `save_metadata`, which requires wasm-bindgen types. For JavaScript/WASM usage see the [npm package](https://npmx.dev/package/@refilelabs/image).
@@ -63,6 +64,23 @@ pub fn resize_image(
 ```
 
 Resizes an image to exact pixel dimensions using the Lanczos3 filter. Preserves the source format. SVG input is rasterized to PNG.
+
+---
+
+### `crop_image`
+
+```rust
+pub fn crop_image(
+    file: &[u8],
+    src_type: &str,
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+) -> Result<Vec<u8>, WasmImageError>
+```
+
+Crops an image to the specified region. Preserves the source format.
 
 ---
 
@@ -111,7 +129,7 @@ Format-specific conversion settings. Currently supports SVG rasterization size.
 ## Usage Example
 
 ```rust
-use refilelabs_image::{convert_image, get_pixels, load_metadata, resize_image};
+use refilelabs_image::{convert_image, crop_image, get_pixels, load_metadata, resize_image};
 use std::fs;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -129,6 +147,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let resized = resize_image(&file, src_type, 800, 600)?;
     fs::write("output_resized.png", resized)?;
+
+    let cropped = crop_image(&file, src_type, 10, 10, 200, 150)?;
+    fs::write("output_cropped.png", cropped)?;
 
     let pixels = get_pixels(&file, src_type)?;
     println!("{} RGBA pixels", pixels.pixels.len() / 4);

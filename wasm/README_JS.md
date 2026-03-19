@@ -1,7 +1,7 @@
 # @refilelabs/image
 [![NPM Version](https://npmx.dev/api/registry/badge/version/@refilelabs/image?label=npm)](https://npmx.dev/package/@refilelabs/image)
 
-A WebAssembly-powered library for advanced image manipulation and format conversion. Powered by Rust and compiled to WebAssembly — runs in the browser, Node.js, and any modern bundler environment.
+A WebAssembly-powered library for advanced image manipulation and format conversion. Powered by Rust and compiled to WebAssembly — runs in the browser, Node.js, and any modern bundler environment. Supports converting, resizing, cropping, and inspecting images entirely client-side.
 
 Used under the hood at [re;file labs](https://refilelabs.com/image) to power all image processing features.
 
@@ -155,6 +155,23 @@ Resizes an image to exact pixel dimensions using the Lanczos3 filter.
 **Notes:**
 - Resizes to exact dimensions without preserving aspect ratio.
 - SVG input is rasterized before resizing; output is PNG.
+
+---
+
+### `cropImage(file, src_type, x, y, width, height, cb): Uint8Array`
+
+Crops an image to the specified region. Preserves the source format.
+
+**Parameters:**
+- `file` (`Uint8Array`): The image file bytes.
+- `src_type` (`string`): MIME type of the source image (e.g. `"image/jpeg"`).
+- `x` (`number`): Left offset of the crop region in pixels.
+- `y` (`number`): Top offset of the crop region in pixels.
+- `width` (`number`): Width of the crop region in pixels.
+- `height` (`number`): Height of the crop region in pixels.
+- `cb` (`(update: { progress: number, message: string }) => void`): Progress callback.
+
+**Returns:** `Uint8Array` — the cropped image bytes, in the original format.
 
 ---
 
