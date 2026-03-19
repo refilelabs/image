@@ -15,10 +15,11 @@ pub mod metadata;
 #[cfg(feature = "wasm")]
 pub(crate) mod progress;
 pub mod resize;
+pub mod rotate;
 pub(crate) mod source_type;
 pub mod view;
 
-pub use {convert::convert_image, crop::crop_image, metadata::load_metadata, resize::resize_image, view::get_pixels};
+pub use {convert::convert_image, crop::crop_image, metadata::load_metadata, resize::resize_image, rotate::rotate_image, view::get_pixels};
 
 #[cfg(feature = "wasm")]
 pub use metadata::save_metadata;
