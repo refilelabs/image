@@ -151,7 +151,7 @@ async function download() {
       Choose File
       <template #file-preview>
         <div class="w-full h-full relative grid place-items-center overflow-hidden">
-          <div v-if="decoding" class="absolute inset-0 z-10 grid place-items-center bg-(--ui-bg)/60 backdrop-blur-sm">
+          <div v-if="decoding" class="absolute inset-0 z-10 grid place-items-center bg-default/60 backdrop-blur-sm">
             <div class="flex flex-col items-center gap-2">
               <UIcon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin" />
               <span class="text-xs text-muted">Decoding image...</span>
@@ -165,10 +165,10 @@ async function download() {
             :style="{ transform: previewTransform }"
             class="max-w-full max-h-full object-contain transition-transform duration-200"
           />
-          <span class="absolute top-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium truncate max-w-[50%]">
+          <span class="absolute top-2 left-2 px-2 py-1 rounded-md bg-accented/80 backdrop-blur-sm text-toned text-xs font-medium truncate max-w-[50%]">
             {{ file?.name }}
           </span>
-          <span v-if="originalSize[0]" class="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-(--ui-bg-accented)/80 backdrop-blur-sm text-toned text-xs font-medium">
+          <span v-if="originalSize[0]" class="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-accented/80 backdrop-blur-sm text-toned text-xs font-medium">
             {{ originalSize[0] }}×{{ originalSize[1] }}px
           </span>
           <div class="absolute top-2 right-2">
@@ -216,7 +216,7 @@ async function download() {
           Reset
         </UButton>
 
-        <UButton class="cursor-pointer ml-auto" trailing-icon="heroicons:arrow-down-tray" :disabled="!file" @click="download">
+        <UButton class="ml-auto" trailing-icon="heroicons:arrow-down-tray" @click="download">
           Download
         </UButton>
       </div>
