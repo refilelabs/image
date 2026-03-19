@@ -46,8 +46,12 @@ const outputType = computed<keyof typeof outputFileEndings>(() => {
   return mime in outputFileEndings ? (mime as keyof typeof outputFileEndings) : 'image/png'
 })
 
-// CSS transform for preview — operation order matches WASM: flipH > flipV > rotate
-// CSS applies right-to-left so scaleX is applied first, then scaleY, then rotate
+// degrees is unbounded so CSS transitions always animate in the correct direction.
+// Apply modulo only for display and WASM.
+const canonicalDegrees = computed(() => ((degrees.value % 360) + 360) % 360)
+
+// CSS transform order is right-to-left: scaleX first, then scaleY, then rotate —
+// matching WASM execution order: flipH, flipV, rotate.
 const previewTransform = computed(() => {
   const fx = flipH.value ? -1 : 1
   const fv = flipV.value ? -1 : 1
@@ -55,11 +59,11 @@ const previewTransform = computed(() => {
 })
 
 function rotateLeft() {
-  degrees.value = ((degrees.value - 90) + 360) % 360
+  degrees.value -= 90
 }
 
 function rotateRight() {
-  degrees.value = (degrees.value + 90) % 360
+  degrees.value += 90
 }
 
 function reset() {
@@ -108,7 +112,7 @@ async function download() {
   const params: RotateWorkerRequest = {
     inputFile: arr,
     inputType: getFileMimeType(file.value),
-    degrees: degrees.value,
+    degrees: canonicalDegrees.value,
     flipH: flipH.value,
     flipV: flipV.value,
   }
@@ -120,14 +124,14 @@ async function download() {
     const suffix = [
       flipH.value ? 'fliph' : '',
       flipV.value ? 'flipv' : '',
-      degrees.value ? `rot${degrees.value}` : '',
+      canonicalDegrees.value ? `rot${canonicalDegrees.value}` : '',
     ].filter(Boolean).join('-') || 'original'
 
     emit('rotate', {
       file: new File([result as Uint8Array<ArrayBuffer>], `${name}-${suffix}.${ext}`, { type: outputType.value }),
       metrics: {
         inputType: getFileMimeType(file.value),
-        degrees: degrees.value,
+        degrees: canonicalDegrees.value,
         flipH: flipH.value,
         flipV: flipV.value,
         originalWidth: originalSize.value[0],
@@ -208,7 +212,7 @@ async function download() {
         </UButton>
 
         <UButton
-          v-if="degrees !== 0 || flipH || flipV"
+          v-if="canonicalDegrees !== 0 || flipH || flipV"
           color="neutral" variant="ghost" size="sm"
           icon="heroicons:x-mark"
           @click="reset"
