@@ -3,8 +3,6 @@ import type { ImageData } from '#image/wasm/pkg/web/refilelabs_image'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import type { CompressionSettings } from './CompressionSettings.vue'
 import { acceptList } from '#image/utils/file_types'
-import { ensureInit } from '#image/wasm/init'
-import { getPixels } from '#image/wasm/pkg/web/refilelabs_image'
 import { breakpointsTailwind } from '@vueuse/core'
 
 export interface CompressionData {
@@ -33,6 +31,7 @@ const toast = useToast()
 const file = ref<File | undefined>(props.initFile)
 
 const progress = ref<WorkerProgress>()
+const { decode, decoding } = useGetPixels()
 
 const x = ref<number>(0)
 
@@ -109,12 +108,8 @@ async function drawCompressedImage(settings: CompressionSettings) {
 }
 
 const tryLoadImage = async (file: File) => {
-  const arraybuffer = await file.arrayBuffer()
-  const arr = new Uint8Array(arraybuffer)
-
-  await ensureInit()
-  const res = getPixels(arr, getFileMimeType(file))
-
+  const res = await decode(file)
+  if (!res) return
   const { width, height, pixels: rawPixels } = res
 
   imageData.width = width
@@ -198,6 +193,12 @@ onMounted(() => {
       Choose File
       <template #file-preview>
         <div ref="container" class="w-full h-full relative">
+          <div v-if="decoding" class="absolute inset-0 z-10 grid place-items-center bg-(--ui-bg)/60 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-2">
+              <UIcon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin" />
+              <span class="text-xs text-muted">Decoding image...</span>
+            </div>
+          </div>
           <ImageComparisonTool v-model="x">
             <div class="w-full h-full notDraggable grid place-items-center">
               <canvas

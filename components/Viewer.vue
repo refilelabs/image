@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { ImageData } from '#image/wasm/pkg/web/refilelabs_image'
 import { acceptList } from '#image/utils/file_types'
-import { ensureInit } from '#image/wasm/init'
-import { getPixels } from '#image/wasm/pkg/web/refilelabs_image'
 
 export interface ViewerData {
   width: number
@@ -28,6 +26,7 @@ const emit = defineEmits<{
 const toast = useToast()
 
 const file = ref<File | undefined>(props.initFile)
+const { decode, decoding } = useGetPixels()
 
 const container = useTemplateRef('container')
 
@@ -45,11 +44,8 @@ const imageData = reactive<Partial<Omit<ImageData, 'pixels'>>>({
 const tryDrawFile = async (file: File) => {
   const start = performance.now()
 
-  const arraybuffer = await file.arrayBuffer()
-  const arr = new Uint8Array(arraybuffer)
-
-  await ensureInit()
-  const res = getPixels(arr, getFileMimeType(file))
+  const res = await decode(file)
+  if (!res) return
 
   const { width, height, aspect_ratio, color_depth } = res
 
@@ -104,6 +100,12 @@ onMounted(() => {
       Choose File
       <template #file-preview>
         <div ref="container" class="w-full h-full grid place-items-center relative">
+          <div v-if="decoding" class="absolute inset-0 z-10 grid place-items-center bg-(--ui-bg)/60 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-2">
+              <UIcon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin" />
+              <span class="text-xs text-muted">Decoding image...</span>
+            </div>
+          </div>
           <canvas
             v-show="file && imageData.width && imageData.height" ref="canvas" :width="imageData.width || 0" :height="imageData.height || 0" :style="{
               maxWidth: `${maxWidth}px`,

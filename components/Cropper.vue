@@ -6,8 +6,6 @@ import type { WorkerProgress } from '#image/workers/shared_types'
 import { getHandles, HANDLE_SIZE, useCropDrag } from '#image/composables/useCropDrag'
 import { acceptList } from '#image/utils/file_types'
 import { runWorker } from '#image/utils/run_worker'
-import { ensureInit } from '#image/wasm/init'
-import { getPixels } from '#image/wasm/pkg/web/refilelabs_image'
 import { parseWorkerError } from '#image/workers/shared_types'
 import CropWorker from '@/workers/crop.ts?worker'
 
@@ -39,6 +37,7 @@ const toast = useToast()
 const file = ref<File | undefined>(props.initFile)
 const originalSize = ref<[number, number]>([0, 0])
 const progress = ref<WorkerProgress>()
+const { decode, decoding } = useGetPixels()
 const crop = ref<CropRect>()
 const aspectLock = ref('free')
 
@@ -225,9 +224,9 @@ watch(aspectLock, () => {
 // ---- image loading ----
 
 async function tryLoadImage(f: File) {
-  const arr = new Uint8Array(await f.arrayBuffer())
-  await ensureInit()
-  const { width, height, pixels } = getPixels(arr, getFileMimeType(f))
+  const res = await decode(f)
+  if (!res) return
+  const { width, height, pixels } = res
 
   originalSize.value = [width, height]
 
@@ -306,6 +305,12 @@ async function download() {
       Choose File
       <template #file-preview>
         <div ref="container" class="w-full h-full relative grid place-items-center overflow-hidden">
+          <div v-if="decoding" class="absolute inset-0 z-10 grid place-items-center bg-(--ui-bg)/60 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-2">
+              <UIcon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin" />
+              <span class="text-xs text-muted">Decoding image...</span>
+            </div>
+          </div>
           <canvas
             v-show="file && originalSize[0]"
             ref="displayCanvas"

@@ -3,8 +3,6 @@ import type { ResizeWorkerRequest } from '#image/workers/resize.d'
 import type { WorkerProgress } from '#image/workers/shared_types'
 import { acceptList } from '#image/utils/file_types'
 import { runWorker } from '#image/utils/run_worker'
-import { ensureInit } from '#image/wasm/init'
-import { getPixels } from '#image/wasm/pkg/web/refilelabs_image'
 import { parseWorkerError } from '#image/workers/shared_types'
 import ResizeWorker from '@/workers/resize.ts?worker'
 
@@ -36,6 +34,7 @@ const file = ref<File | undefined>(props.initFile)
 const originalSize = ref<[number, number]>([0, 0])
 const size = ref<[number, number]>([0, 0])
 const progress = ref<WorkerProgress>()
+const { decode, decoding } = useGetPixels()
 
 const aspectRatio = computed(() =>
   originalSize.value[1] > 0 ? originalSize.value[0] / originalSize.value[1] : 1,
@@ -68,9 +67,8 @@ function drawPreview() {
 watch(size, () => drawPreview(), { flush: 'post' })
 
 async function tryLoadImage(f: File) {
-  const arr = new Uint8Array(await f.arrayBuffer())
-  await ensureInit()
-  const res = getPixels(arr, getFileMimeType(f))
+  const res = await decode(f)
+  if (!res) return
   const { width, height, pixels: rawPixels } = res
 
   originalSize.value = [width, height]
@@ -160,6 +158,12 @@ onMounted(() => {
       Choose File
       <template #file-preview>
         <div ref="container" class="w-full h-full relative grid place-items-center">
+          <div v-if="decoding" class="absolute inset-0 z-10 grid place-items-center bg-(--ui-bg)/60 backdrop-blur-sm">
+            <div class="flex flex-col items-center gap-2">
+              <UIcon name="heroicons:arrow-path" class="w-6 h-6 text-primary animate-spin" />
+              <span class="text-xs text-muted">Decoding image...</span>
+            </div>
+          </div>
           <canvas
             v-show="file && size[0] && size[1]"
             ref="previewCanvas"
