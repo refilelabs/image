@@ -68,6 +68,11 @@ pub fn rotate_image(
 
     let file = file.to_vec();
 
+    if degrees == 0 && !flip_h && !flip_v {
+        crate::progress::report(cb, 100.0, "Done");
+        return Ok(Uint8Array::from(file.as_slice()));
+    }
+
     crate::progress::report(cb, 35.0, "Loading image");
 
     let img = load_image(&file, src_mime_type.as_ref())
@@ -78,6 +83,7 @@ pub fn rotate_image(
     let output = rotate_and_write(&img, ImageFormat::from_mime_type(src_type), degrees, flip_h, flip_v)
         .map_err(|e| JsValue::from_str(e.to_string().as_str()))?;
 
+    crate::progress::report(cb, 90.0, "Encoding");
     crate::progress::report(cb, 100.0, "Done");
 
     Ok(Uint8Array::from(output.as_slice()))
@@ -100,6 +106,9 @@ pub fn rotate_image(
     flip_h: bool,
     flip_v: bool,
 ) -> Result<Vec<u8>, WasmImageError> {
+    if degrees == 0 && !flip_h && !flip_v {
+        return Ok(file.to_vec());
+    }
     let src_mime_type = SourceType::from_mime_type(src_type);
     let img = load_image(file, src_mime_type.as_ref())?;
     rotate_and_write(&img, ImageFormat::from_mime_type(src_type), degrees, flip_h, flip_v)
