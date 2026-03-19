@@ -109,7 +109,9 @@ async function drawCompressedImage(settings: CompressionSettings) {
 
 const tryLoadImage = async (file: File) => {
   const res = await decode(file)
-  if (!res) return
+  if (!res)
+    return
+
   const { width, height, pixels: rawPixels } = res
 
   imageData.width = width

@@ -45,7 +45,8 @@ const tryDrawFile = async (file: File) => {
   const start = performance.now()
 
   const res = await decode(file)
-  if (!res) return
+  if (!res)
+    return
 
   const { width, height, aspect_ratio, color_depth } = res
 
