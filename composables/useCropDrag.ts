@@ -98,7 +98,7 @@ export function useCropDrag({ crop, originalSize, displayScale, displayCanvas, a
     if (aspectLock.value === 'free')
       return rect
     const ratio = aspectRatioMap[aspectLock.value]
-    if (!ratio)
+    if (ratio === undefined)
       return rect
     const newH = Math.round(rect.w / ratio)
     if (anchor.includes('S') || !anchor.includes('N'))
@@ -200,10 +200,14 @@ export function useCropDrag({ crop, originalSize, displayScale, displayCanvas, a
       return
     const [imgW, imgH] = originalSize.value
     const c = { ...crop.value }
-    if (field === 'x') c.x = clamp(num, 0, imgW - c.w)
-    else if (field === 'y') c.y = clamp(num, 0, imgH - c.h)
-    else if (field === 'w') c.w = clamp(num, 1, imgW - c.x)
-    else if (field === 'h') c.h = clamp(num, 1, imgH - c.y)
+    if (field === 'x')
+      c.x = clamp(num, 0, imgW - c.w)
+    else if (field === 'y')
+      c.y = clamp(num, 0, imgH - c.h)
+    else if (field === 'w')
+      c.w = clamp(num, 1, imgW - c.x)
+    else if (field === 'h')
+      c.h = clamp(num, 1, imgH - c.y)
     crop.value = c
   }
 

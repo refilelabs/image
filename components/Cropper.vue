@@ -225,7 +225,9 @@ watch(aspectLock, () => {
 
 async function tryLoadImage(f: File) {
   const res = await decode(f)
-  if (!res) return
+  if (!res)
+    return
+
   const { width, height, pixels } = res
 
   originalSize.value = [width, height]
